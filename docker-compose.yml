@@ -1,0 +1,125 @@
+# CManage — Kalem Platform Yönetim ve Orkestrasyon Paneli
+# Kullanım: cp .env.example .env && docker compose up -d --build
+name: cmanage
+
+services:
+
+  # ── Traefik: dinamik subdomain yönlendirme + wildcard TLS ─────────────────
+  traefik:
+    image: traefik:v3.3
+    container_name: cmanage-traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=cmanage-edge"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.websecure.address=:443"
+      # Wildcard sertifika için DNS-01 (sağlayıcınıza göre değiştirin):
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=${ACME_DNS_PROVIDER:-cloudflare}"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--api.dashboard=true"
+    ports: ["80:80", "443:443"]
+    environment:
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-acme:/letsencrypt
+    networks: [edge]
+
+  # ── Docker Socket Proxy: API'nin Docker erişimini kısıtlar ────────────────
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3
+    container_name: cmanage-socket-proxy
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      IMAGES: 1
+      NETWORKS: 1
+      POST: 1
+      # Gerekmeyen her şey kapalı (varsayılan 0)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [internal]
+
+  # ── CManage veritabanı + tenant veritabanları sunucusu ────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: cmanage-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cmanage
+      POSTGRES_USER: cmanage
+      POSTGRES_PASSWORD: ${CMANAGE_DB_PASSWORD:?}
+    volumes:
+      - cmanage-pgdata:/var/lib/postgresql/data
+    networks: [internal, tenants]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmanage"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  redis:
+    image: redis:7-alpine
+    container_name: cmanage-redis
+    restart: unless-stopped
+    networks: [internal]
+
+  # ── CManage API (NestJS) ───────────────────────────────────────────────────
+  api:
+    build: ./api
+    container_name: cmanage-api
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgres://cmanage:${CMANAGE_DB_PASSWORD}@db:5432/cmanage
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DOCKER_HOST_URL: http://socket-proxy:2375
+      BASE_DOMAIN: ${BASE_DOMAIN:?}
+      KALEM_API_IMAGE: ${KALEM_API_IMAGE:?}
+      KALEM_WEB_IMAGE: ${KALEM_WEB_IMAGE:?}
+      TENANT_DB_HOST: db
+      TENANT_DB_ADMIN_USER: cmanage
+      TENANT_DB_ADMIN_PASSWORD: ${CMANAGE_DB_PASSWORD}
+      TENANT_EDGE_NETWORK: cmanage-edge
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?}
+      CMANAGE_JWT_SECRET: ${CMANAGE_JWT_SECRET:?}
+      CMANAGE_ADMIN_EMAIL: ${CMANAGE_ADMIN_EMAIL:-admin@kalemplatform.com}
+      CMANAGE_ADMIN_PASSWORD: ${CMANAGE_ADMIN_PASSWORD:?}
+      # Üretimde migration'a geçince 'false' yapın
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    networks: [internal, tenants]
+
+  # ── CManage Web (React + nginx) — panel.<domain> ──────────────────────────
+  web:
+    build: ./web
+    container_name: cmanage-web
+    restart: unless-stopped
+    depends_on: [api]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cmanage.rule=Host(`panel.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.cmanage.entrypoints=websecure"
+      - "traefik.http.routers.cmanage.tls.certresolver=letsencrypt"
+      - "traefik.http.services.cmanage.loadbalancer.server.port=80"
+      - "traefik.docker.network=cmanage-edge"
+    networks: [edge, internal]
+
+networks:
+  edge:
+    name: cmanage-edge
+  internal:
+    name: cmanage-internal
+  tenants:
+    name: cmanage-tenants
+
+volumes:
+  cmanage-pgdata:
+  traefik-acme:

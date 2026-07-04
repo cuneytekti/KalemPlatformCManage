@@ -1,0 +1,41 @@
+services:
+  socket-proxy:
+    environment:
+      EVENTS: 1
+      INFO: 1
+      VERSION: 1
+
+  traefik:
+    image: traefik:latest
+    environment:
+      DOCKER_API_VERSION: "1.54"
+    command: !override
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=tcp://socket-proxy:2375"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=cmanage-edge"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--api.dashboard=true"
+    networks: !override
+      - edge
+      - internal
+    ports: !override
+      - "18080:80"
+      - "18443:443"
+    volumes: !override
+      - traefik-acme:/letsencrypt
+
+  web:
+    labels: !override
+      - "traefik.enable=true"
+      - "traefik.http.routers.cmanage.rule=Host(`panel.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.cmanage.entrypoints=web"
+      - "traefik.http.services.cmanage.loadbalancer.server.port=80"
+      - "traefik.docker.network=cmanage-edge"
+    ports:
+      - "18081:80"
+
+  api:
+    ports:
+      - "3000:3000"
