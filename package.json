@@ -1,0 +1,13 @@
+{
+  "name": "kalem-platform-cmanage",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace api && npm run build --workspace web",
+    "test": "npm test --workspace api"
+  }
+}
