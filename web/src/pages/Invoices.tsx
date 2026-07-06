@@ -10,6 +10,16 @@ export function InvoicesPage() {
   const [busy, setBusy] = useState(false);
   const toast = useToast();
 
+  async function sendEmail(inv: Invoice) {
+    try {
+      await api.invoices.send(inv.id, 'az');
+      toast.success(`Fatura e-postayla gönderildi (${inv.period})`);
+      reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
   const reload = () => {
     void api.invoices.list().then(setInvoices).catch(() => setInvoices([]));
     void api.tenants.list().then(setTenants).catch(() => setTenants([]));
@@ -68,7 +78,11 @@ export function InvoicesPage() {
               <td><strong>{inv.total} {inv.currency}</strong></td>
               <td>{inv.dueDate ?? '—'}</td>
               <td><span className={`badge ${inv.status === 'PAID' ? 'ACTIVE' : inv.status === 'OVERDUE' ? 'FAILED' : inv.status}`}>{inv.status}</span></td>
-              <td style={{ display: 'flex', gap: '0.4rem' }}>
+              <td style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <a href={api.invoices.pdfUrl(inv.id, 'az')} title="Fatura PDF">PDF</a>
+                {(inv.status === 'DRAFT' || inv.status === 'SENT' || inv.status === 'OVERDUE') && (
+                  <button className="ghost" onClick={() => void sendEmail(inv)}>E-posta Gönder</button>
+                )}
                 {inv.status === 'DRAFT' && (
                   <button onClick={() => void api.invoices.setStatus(inv.id, 'SENT').then(reload)}>Gönderildi</button>
                 )}

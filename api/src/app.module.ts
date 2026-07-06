@@ -11,6 +11,8 @@ import { AuthModule } from './auth/auth.module';
 import configuration from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { LeadsModule } from './leads/leads.module';
+import { MailModule } from './mail/mail.module';
 import { LicensesModule } from './licenses/licenses.module';
 import { ProvisioningModule } from './provisioning/provisioning.module';
 import { QuotesModule } from './quotes/quotes.module';
@@ -57,11 +59,13 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     ScheduleModule.forRoot(),
     HealthModule,
+    MailModule,
     AuthModule,
     AuditModule,
     SystemModule,
     UsageModule,
     InvoicesModule,
+    LeadsModule,
     TenantsModule,
     ProvisioningModule,
     LicensesModule,

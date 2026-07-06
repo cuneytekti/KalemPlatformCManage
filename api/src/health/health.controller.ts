@@ -22,7 +22,8 @@ export class HealthController {
       result.db = 'down';
     }
     try {
-      await (await this.queue.client).ping();
+      const redisClient = (await this.queue.client) as unknown as { ping: () => Promise<unknown> };
+      await redisClient.ping();
     } catch {
       result.redis = 'down';
     }

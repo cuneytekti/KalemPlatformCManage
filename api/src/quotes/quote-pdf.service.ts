@@ -1,4 +1,5 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { PdfService } from '../common/pdf.service';
 import { Quote } from '../entities/quote.entity';
 
 export type QuoteLang = 'az' | 'tr' | 'en';
@@ -58,6 +59,8 @@ const LOCALE: Record<QuoteLang, string> = { az: 'az-AZ', tr: 'tr-TR', en: 'en-US
 
 @Injectable()
 export class QuotePdfService {
+  constructor(private readonly pdf: PdfService) {}
+
   renderHtml(quote: Quote, lang: QuoteLang): string {
     const t = I18N[lang];
     const money = (v: string) => `${parseFloat(v).toFixed(2)} ${quote.currency}`;
@@ -104,25 +107,8 @@ export class QuotePdfService {
 </body></html>`;
   }
 
-  /** Playwright ile HTML→PDF. Chromium kurulu değilse anlaşılır hata döner. */
   async renderPdf(quote: Quote, lang: QuoteLang): Promise<Buffer> {
-    let chromium: typeof import('playwright-core').chromium;
-    try {
-      ({ chromium } = await import('playwright-core'));
-    } catch {
-      throw new NotImplementedException(
-        'PDF üretimi için Chromium gerekli: npx playwright-core install --with-deps chromium',
-      );
-    }
-    const browser = await chromium.launch();
-    try {
-      const page = await browser.newPage();
-      await page.setContent(this.renderHtml(quote, lang), { waitUntil: 'networkidle' });
-      const pdf = await page.pdf({ format: 'A4', printBackground: true });
-      return Buffer.from(pdf);
-    } finally {
-      await browser.close();
-    }
+    return this.pdf.htmlToPdf(this.renderHtml(quote, lang));
   }
 
   private escape(s: string): string {

@@ -52,6 +52,10 @@ export class Quote {
   @Column({ type: 'enum', enum: QuoteStatus, default: QuoteStatus.DRAFT })
   status: QuoteStatus;
 
+  /** Teklif tenant'a dönüştürüldüyse dolu (çifte dönüşüm koruması) */
+  @Column({ nullable: true })
+  tenantId?: string;
+
   @Column({ type: 'text', nullable: true })
   notes?: string;
 

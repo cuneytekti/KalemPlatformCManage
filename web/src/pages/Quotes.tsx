@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { EmptyState } from '../components/ui';
 import { api, Quote } from '../lib/api';
@@ -7,6 +8,35 @@ export function QuotesPage() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [error, setError] = useState('');
   const toast = useToast();
+  const navigate = useNavigate();
+  const [convertId, setConvertId] = useState<string | null>(null);
+  const [slug, setSlug] = useState('');
+
+  async function sendEmail(q: Quote) {
+    try {
+      await api.quotes.send(q.id, 'az');
+      toast.success(`Teklif e-postayla gönderildi: ${q.customerName}`);
+      reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  async function convertToTenant(q: Quote) {
+    if (!/^[a-z][a-z0-9-]{2,30}$/.test(slug)) {
+      toast.error('Geçerli bir subdomain girin (küçük harf, 3-31 karakter)');
+      return;
+    }
+    try {
+      const tenant = await api.quotes.convertToTenant(q.id, slug);
+      toast.success(`${q.customerName} → ${slug}.kalemplatform.com kurulumu başladı`);
+      setConvertId(null);
+      setSlug('');
+      navigate(`/tenants/${tenant.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
   const [qty, setQty] = useState({ seats: 5, pos: 1, mobile: 0 });
   const [unit, setUnit] = useState({ user: '', pos: '', mobile: '0' });
 
@@ -111,16 +141,35 @@ export function QuotesPage() {
               <td><strong>{q.monthlyTotal} {q.currency}</strong></td>
               <td><span className={`badge ${q.status}`}>{q.status}</span></td>
               <td>{new Date(q.createdAt).toLocaleDateString('tr-TR')}</td>
-              <td style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                {(['az', 'tr', 'en'] as const).map((lang) => (
-                  <a key={lang} href={api.quotes.pdfUrl(q.id, lang)} title={`PDF (${lang})`}>
-                    {lang.toUpperCase()}
-                  </a>
-                ))}
-                {q.status === 'DRAFT' && (
-                  <button onClick={() => void api.quotes.setStatus(q.id, 'SENT').then(reload)}>
-                    Gönderildi işaretle
-                  </button>
+              <td>
+                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {(['az', 'tr', 'en'] as const).map((lang) => (
+                    <a key={lang} href={api.quotes.pdfUrl(q.id, lang)} title={`PDF (${lang})`}>
+                      {lang.toUpperCase()}
+                    </a>
+                  ))}
+                  {(q.status === 'DRAFT' || q.status === 'SENT') && (
+                    <button className="ghost" onClick={() => void sendEmail(q)}>E-posta Gönder</button>
+                  )}
+                  {!q.tenantId && q.status !== 'REJECTED' && convertId !== q.id && (
+                    <button onClick={() => { setConvertId(q.id); setSlug(''); }}>
+                      Müşteriye Dönüştür
+                    </button>
+                  )}
+                  {q.tenantId && <span className="badge ACTIVE">Müşteri ✓</span>}
+                </div>
+                {convertId === q.id && (
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                    <input
+                      placeholder="subdomain (örn: musteri1)"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value.toLowerCase())}
+                      pattern="[a-z][a-z0-9-]{2,30}"
+                      autoFocus
+                    />
+                    <button onClick={() => void convertToTenant(q)}>Kur</button>
+                    <button className="ghost" onClick={() => setConvertId(null)}>Vazgeç</button>
+                  </div>
                 )}
               </td>
             </tr>

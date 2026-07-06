@@ -39,3 +39,13 @@ services:
   api:
     ports:
       - "3000:3000"
+
+  website:
+    labels: !override
+      - "traefik.enable=true"
+      - "traefik.http.routers.website.rule=Host(`website.localhost`)"
+      - "traefik.http.routers.website.entrypoints=web"
+      - "traefik.http.services.website.loadbalancer.server.port=80"
+      - "traefik.docker.network=cmanage-edge"
+    ports:
+      - "8090:80"

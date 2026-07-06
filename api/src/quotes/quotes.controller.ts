@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { IsEmail, IsEnum, IsInt, IsNumberString, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsEmail, IsEnum, IsIn, IsInt, IsNumberString, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
+import { Tenant } from '../entities/tenant.entity';
 import { Quote, QuoteStatus } from '../entities/quote.entity';
 import { QuotePdfService, QuoteLang } from './quote-pdf.service';
 import { QuotesService } from './quotes.service';
@@ -42,6 +43,18 @@ class SetStatusDto {
   status: QuoteStatus;
 }
 
+class ConvertDto {
+  @Matches(/^[a-z][a-z0-9-]{2,30}$/, {
+    message: 'slug küçük harfle başlamalı; yalnız a-z, 0-9 ve tire (3-31 karakter)',
+  })
+  slug: string;
+}
+
+class SendDto {
+  @IsOptional() @IsIn(['az', 'tr', 'en'])
+  lang?: 'az' | 'tr' | 'en';
+}
+
 @Controller('quotes')
 export class QuotesController {
   constructor(
@@ -79,5 +92,17 @@ export class QuotesController {
   @Patch(':id/status')
   setStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: SetStatusDto): Promise<Quote> {
     return this.quotesService.setStatus(id, dto.status);
+  }
+
+  /** Teklif PDF'ini müşteriye e-postayla gönderir (SENT işaretler). */
+  @Post(':id/send')
+  send(@Param('id', ParseUUIDPipe) id: string, @Body() dto: SendDto): Promise<Quote> {
+    return this.quotesService.sendByEmail(id, dto.lang ?? 'az');
+  }
+
+  /** Teklifi tek tıkla tenant'a dönüştürür: kurulum + lisans + ACCEPTED. */
+  @Post(':id/convert-to-tenant')
+  convert(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ConvertDto): Promise<Tenant> {
+    return this.quotesService.convertToTenant(id, dto.slug);
   }
 }

@@ -23,6 +23,21 @@ export default () => ({
     webMemoryMb: parseInt(process.env.TENANT_WEB_MEMORY_MB ?? '128', 10),
   },
   webhookSecret: process.env.WEBHOOK_SECRET ?? '',
+  smtp: {
+    host: process.env.SMTP_HOST ?? '',
+    port: parseInt(process.env.SMTP_PORT ?? '587', 10),
+    user: process.env.SMTP_USER ?? '',
+    pass: process.env.SMTP_PASS ?? '',
+    from: process.env.SMTP_FROM ?? 'Kalem Platform <info@kalemyazilim.az>',
+  },
+  // Lead → Teklif dönüşümünde kullanılan varsayılan birim fiyatlar (aylık)
+  defaultPrices: {
+    user: process.env.DEFAULT_PRICE_USER ?? '15.00',
+    pos: process.env.DEFAULT_PRICE_POS ?? '49.00',
+    mobile: process.env.DEFAULT_PRICE_MOBILE ?? '19.00',
+  },
+  // Fatura vadesi geçtikten N gün sonra tenant otomatik askıya alınır (0 = kapalı)
+  autoSuspendOverdueDays: parseInt(process.env.AUTO_SUSPEND_OVERDUE_DAYS ?? '0', 10),
   // Panel JWT imza anahtarı — üretimde mutlaka güçlü bir değer verin
   jwtSecret: process.env.CMANAGE_JWT_SECRET ?? 'dev-only-secret-degistir',
   admin: {

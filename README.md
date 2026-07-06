@@ -88,3 +88,18 @@ Docker imaj build kontrolü.
 - [ ] Fatura PDF + e-posta gönderimi (SMTP)
 - [ ] Satış web sitesi + ödeme entegrasyonu (Faz 4)
 - [ ] Çoklu host desteği (yerleştirme stratejisi)
+
+## Satış web sitesi (website/)
+
+`kalemplatform.com` için üç dilli (az/tr/en) statik pazarlama sitesi:
+nginx container'ı, Traefik üzerinden kök domain + www yayını
+(www → kök yönlendirmeli). Özellikler: üç boyutlu fiyat hesaplayıcı
+(kullanıcı/kasa/mobil — birim fiyatlar `website/app.js` → `CONFIG.prices`),
+demo başvuru formu (`CONFIG.leadEndpoint` doldurulursa POST, boşsa mailto),
+KalemPlatformv1 işlevselliğine dayalı içerik (POS, offline, zincir mağaza,
+Logo Tiger/Netsis, NBASoft, e-kassa).
+
+Logo: `website/assets/logo.svg` vektörel yeniden çizimdir; orijinal logo
+dosyalarınızı aynı isimle bu klasöre koyarak değiştirebilirsiniz.
+
+Lokal önizleme: `cd website && python3 -m http.server 8090`

@@ -5,6 +5,7 @@ import { ToastProvider } from './components/Toast';
 import { auth } from './lib/auth';
 import { DashboardPage } from './pages/Dashboard';
 import { InvoicesPage } from './pages/Invoices';
+import { LeadsPage } from './pages/Leads';
 import { LicensesPage } from './pages/Licenses';
 import { LoginPage } from './pages/Login';
 import { QuotesPage } from './pages/Quotes';
@@ -32,6 +33,7 @@ function Layout({ children }: { children: ReactNode }) {
         <h1>CManage</h1>
         <nav>
           <NavLink to="/" end>Genel Bakış</NavLink>
+          <NavLink to="/leads">Başvurular</NavLink>
           <NavLink to="/tenants">Müşteriler</NavLink>
           <NavLink to="/licenses">Lisanslar</NavLink>
           <NavLink to="/quotes">Teklifler</NavLink>
@@ -69,6 +71,7 @@ function AppRoutes() {
             <Layout>
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
+                <Route path="/leads" element={<LeadsPage />} />
                 <Route path="/tenants" element={<TenantsPage />} />
                 <Route path="/tenants/:id" element={<TenantDetailPage />} />
                 <Route path="/licenses" element={<LicensesPage />} />

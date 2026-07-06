@@ -36,6 +36,20 @@ export interface Invoice {
   createdAt: string;
 }
 
+export interface Lead {
+  id: string;
+  name: string;
+  company: string;
+  email: string;
+  phone?: string;
+  message?: string;
+  config?: string;
+  source: string;
+  status: 'NEW' | 'CONTACTED' | 'CONVERTED' | 'CLOSED';
+  quoteId?: string;
+  createdAt: string;
+}
+
 export interface AdminUserInfo {
   id: string;
   email: string;
@@ -73,6 +87,7 @@ export interface Quote {
   monthlyTotal: string;
   currency: string;
   status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED';
+  tenantId?: string;
   notes?: string;
   createdAt: string;
 }
@@ -145,6 +160,17 @@ export const api = {
       request<Invoice[]>(`/invoices/generate${period ? `?period=${period}` : ''}`, { method: 'POST' }),
     setStatus: (id: string, status: Invoice['status']) =>
       request<Invoice>(`/invoices/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    pdfUrl: (id: string, lang: 'az' | 'tr' | 'en' = 'az') =>
+      `/api/invoices/${id}/pdf?lang=${lang}&token=${encodeURIComponent(auth.getToken() ?? '')}`,
+    send: (id: string, lang: 'az' | 'tr' | 'en' = 'az') =>
+      request<Invoice>(`/invoices/${id}/send`, { method: 'POST', body: JSON.stringify({ lang }) }),
+  },
+  leads: {
+    list: () => request<Lead[]>('/leads'),
+    setStatus: (id: string, status: Lead['status']) =>
+      request<Lead>(`/leads/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    convertToQuote: (id: string) =>
+      request<Quote>(`/leads/${id}/convert-to-quote`, { method: 'POST' }),
   },
   users: {
     list: () => request<AdminUserInfo[]>('/auth/users'),
@@ -166,5 +192,9 @@ export const api = {
       request<Quote>(`/quotes/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     pdfUrl: (id: string, lang: 'az' | 'tr' | 'en') =>
       `/api/quotes/${id}/pdf?lang=${lang}&token=${encodeURIComponent(auth.getToken() ?? '')}`,
+    send: (id: string, lang: 'az' | 'tr' | 'en' = 'az') =>
+      request<Quote>(`/quotes/${id}/send`, { method: 'POST', body: JSON.stringify({ lang }) }),
+    convertToTenant: (id: string, slug: string) =>
+      request<Tenant>(`/quotes/${id}/convert-to-tenant`, { method: 'POST', body: JSON.stringify({ slug }) }),
   },
 };
