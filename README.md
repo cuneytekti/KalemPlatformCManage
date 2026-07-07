@@ -53,10 +53,15 @@ cd api && npx playwright-core install --with-deps chromium
 
 Geliştirmede şema `synchronize` ile otomatik güncellenir. Üretimde:
 
+İlk migration üretildi: `api/src/migrations/1783437410857-InitialSchema.ts`
+(uuid-ossp eklentisi dahil). Üretimde `.env` içinde `DB_SYNCHRONIZE=false`
+bırakın — uygulama açılışta migration'ları otomatik çalıştırır.
+
+Şema değişikliğinde yeni migration üretmek için:
+
 ```bash
 cd api
-DATABASE_URL=postgres://... npm run migration:generate   # ilk migration'ı üret
-# .env: DB_SYNCHRONIZE=false  → uygulama açılışta migration'ları çalıştırır
+DATABASE_URL=postgres://... npm run migration:generate
 ```
 
 ## Test & CI

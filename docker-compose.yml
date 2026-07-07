@@ -78,6 +78,7 @@ services:
       db: { condition: service_healthy }
     environment:
       DATABASE_URL: postgres://cmanage:${CMANAGE_DB_PASSWORD}@db:5432/cmanage
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       DOCKER_HOST_URL: http://socket-proxy:2375
