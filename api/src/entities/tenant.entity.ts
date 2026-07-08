@@ -52,7 +52,18 @@ export class Tenant {
 
   /** Kullanım toplayıcının son okuduğu değerler */
   @Column({ type: 'jsonb', nullable: true })
-  lastUsage?: { users?: number; posTerminals?: number; mobileTerminals?: number; fetchedAt?: string };
+  lastUsage?: {
+    users?: number;
+    posTerminals?: number;
+    mobileTerminals?: number;
+    fetchedAt?: string;
+    alerts?: Array<{
+      dimension: 'users' | 'posTerminals' | 'mobileTerminals';
+      used: number;
+      limit: number;
+      level: 'NEAR' | 'OVER' | 'DRIFT';
+    }>;
+  };
 
   @Column({ default: 5 })
   licensedUsers: number;

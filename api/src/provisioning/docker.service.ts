@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Docker from 'dockerode';
+import { CryptoService } from '../common/crypto.service';
 import { Tenant } from '../entities/tenant.entity';
 
 export interface TenantRuntimeConfig {
@@ -20,7 +21,7 @@ export class DockerService {
     edgeNetwork: string; apiMemoryMb: number; webMemoryMb: number;
   };
 
-  constructor(config: ConfigService) {
+  constructor(config: ConfigService, private readonly crypto: CryptoService) {
     const hostUrl = config.get<string>('docker.hostUrl');
     if (hostUrl) {
       const url = new URL(hostUrl);
@@ -88,6 +89,7 @@ export class DockerService {
         `KALEM_DB_USERNAME=${tenant.dbUser}`,
         `KALEM_DB_PASSWORD=${runtime.dbPassword}`,
         `KALEM_JWT_SECRET=${runtime.jwtSecret}`,
+        `KALEM_INTERNAL_TOKEN=${this.crypto.internalLicenseToken(runtime.jwtSecret)}`,
         `KALEM_CORS_ORIGINS=https://${host}`,
         'KALEM_COOKIE_SECURE=true',
         `KALEM_ERP_TYPE=${tenant.erpType}`,
@@ -161,6 +163,7 @@ export class DockerService {
         `KALEM_DB_USERNAME=${tenant.dbUser}`,
         `KALEM_DB_PASSWORD=${runtime.dbPassword}`,
         `KALEM_JWT_SECRET=${runtime.jwtSecret}`,
+        `KALEM_INTERNAL_TOKEN=${this.crypto.internalLicenseToken(runtime.jwtSecret)}`,
         `KALEM_CORS_ORIGINS=https://${host}`,
         'KALEM_COOKIE_SECURE=true',
         `KALEM_MAX_MOBILE_TERMINALS=${tenant.licensedMobileTerminals}`,

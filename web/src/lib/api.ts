@@ -12,7 +12,7 @@ export interface Tenant {
   licensedMobileTerminals: number;
   erpType: string;
   createdAt: string;
-  lastUsage?: { users?: number; posTerminals?: number; mobileTerminals?: number; fetchedAt?: string };
+  lastUsage?: { users?: number; posTerminals?: number; mobileTerminals?: number; fetchedAt?: string; alerts?: UsageAlert[] };
 }
 
 export interface SystemStats {
@@ -56,6 +56,21 @@ export interface AdminUserInfo {
   name: string;
   role: string;
   createdAt: string;
+}
+
+export interface UsageAlert {
+  dimension: 'users' | 'posTerminals' | 'mobileTerminals';
+  used: number;
+  limit: number;
+  level: 'NEAR' | 'OVER' | 'DRIFT';
+}
+
+export interface TenantUsageAlerts {
+  tenantId: string;
+  slug: string;
+  name: string;
+  fetchedAt?: string;
+  alerts: UsageAlert[];
 }
 
 export interface License {
@@ -150,6 +165,10 @@ export const api = {
     updateLicense: (id: string, data: {
       licensedUsers: number; licensedPosTerminals: number; licensedMobileTerminals: number;
     }) => request<Tenant>(`/tenants/${id}/license`, { method: 'PATCH', body: JSON.stringify(data) }),
+  },
+  usage: {
+    alerts: () => request<TenantUsageAlerts[]>('/usage/alerts'),
+    collect: () => request<{ collected: number; alerted: number }>('/usage/collect', { method: 'POST' }),
   },
   system: {
     stats: () => request<SystemStats>('/system/stats'),

@@ -95,11 +95,11 @@ Docker imaj build kontrolü.
 - [x] Panel kimlik doğrulaması (JWT, scrypt şifre, ilk admin tohumlama) — 2FA sonraya
 - [x] Teklif PDF üretimi (az/tr/en, Playwright HTML→PDF)
 - [x] Tenant suspend/resume/delete/retry + lisans reconfigure akışları
-- [x] Lisans kullanım toplayıcı (saatlik; Kalem /internal/license bekleniyor)
+- [x] Lisans kullanım toplayıcı: servis token'lı /internal/license entegrasyonu + NEAR/OVER/DRIFT uyarıları (sözleşme: docs/INTERNAL_LICENSE_API.md)
 - [x] Aylık fatura üretimi (cron + manuel) + segment bazlı pro-rata (lisans geçmişi korunur)
 - [x] Audit log + admin kullanıcı yönetimi + sistem metrikleri
 - [x] Migration altyapısı + ilk migration (InitialSchema; uygulama açılışta otomatik uygular)
-- [ ] Kalem API tarafı: KALEM_MAX_* zorlaması + /internal/license endpoint'i (Faz 2)
+- [ ] Kalem API tarafı: KALEM_MAX_* zorlaması + /internal/license (Faz 2 — sözleşme hazır, KalemPlatform reposunda uygulanacak)
 - [x] Fatura PDF (az/tr/en) + e-posta gönderimi; gecikme hatırlatması + oto-suspend
 - [ ] Satış web sitesi + ödeme entegrasyonu (Faz 4)
 - [ ] Çoklu host desteği (yerleştirme stratejisi)
