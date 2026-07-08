@@ -101,8 +101,22 @@ Docker imaj build kontrolü.
 - [x] Migration altyapısı + ilk migration (InitialSchema; uygulama açılışta otomatik uygular)
 - [ ] Kalem API tarafı: KALEM_MAX_* zorlaması + /internal/license (Faz 2 — sözleşme hazır, KalemPlatform reposunda uygulanacak)
 - [x] Fatura PDF (az/tr/en) + e-posta gönderimi; gecikme hatırlatması + oto-suspend
-- [ ] Satış web sitesi + ödeme entegrasyonu (Faz 4)
+- [x] Satış sitesinden online satın alma: PashaBank ECOMM sanal POS → otomatik tenant kurulumu + karşılama e-postası
 - [ ] Çoklu host desteği (yerleştirme stratejisi)
+
+## Ödeme entegrasyonu (PashaBank ECOMM)
+
+Web sitesindeki fiyat hesaplayıcıdan "İndi al" → `POST /api/public/orders`
+(fiyat sunucuda hesaplanır) → banka ödeme sayfası → dönüşte sonuç
+sunucudan-sunucuya doğrulanır (`command=c`) → otomatik tenant kurulumu +
+karşılama e-postası. Sipariş kayıtları `orders` tablosunda; panel
+`GET /api/orders` ile listeler.
+
+Kurulum: banka sözleşmesi sonrası verilen mTLS sertifikasını `secrets/`
+klasörüne koyun (`pasha-cert.pem`, `pasha-key.pem`) ve `.env`'deki
+`PASHA_*` alanlarını doldurun. Gün sonu kapanışı (command=b) her gece
+23:50 Bakü'de otomatik çalışır. `PASHA_MOCK=true` yalnız staging'de,
+banka olmadan uçtan uca akış testi içindir.
 
 ## Satış web sitesi (website/)
 

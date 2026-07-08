@@ -97,6 +97,13 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Web sitesi demo formu panel API'sine cross-origin POST atar
       CMANAGE_CORS_ORIGINS: https://${BASE_DOMAIN},https://www.${BASE_DOMAIN},https://panel.${BASE_DOMAIN}
+      # PashaBank ECOMM (boşsa web satın alma kapalı)
+      PASHA_MERCHANT_HANDLER: ${PASHA_MERCHANT_HANDLER:-}
+      PASHA_CLIENT_HANDLER: ${PASHA_CLIENT_HANDLER:-https://ecomm.pashabank.az:8463/ecomm2/ClientHandler}
+      PASHA_CERT_PATH: ${PASHA_CERT_PATH:-}
+      PASHA_KEY_PATH: ${PASHA_KEY_PATH:-}
+      PASHA_KEY_PASSPHRASE: ${PASHA_KEY_PASSPHRASE:-}
+      PASHA_MOCK: ${PASHA_MOCK:-false}
       # E-posta (boş bırakılırsa gönderim devre dışı)
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -109,6 +116,9 @@ services:
       DEFAULT_PRICE_MOBILE: ${DEFAULT_PRICE_MOBILE:-19.00}
       # Fatura vadesi geçtikten N gün sonra oto-suspend (0 = kapalı)
       AUTO_SUSPEND_OVERDUE_DAYS: ${AUTO_SUSPEND_OVERDUE_DAYS:-0}
+    volumes:
+      # PashaBank mTLS sertifikaları (yol .env'deki PASHA_CERT_PATH/KEY_PATH ile aynı olmalı)
+      - ./secrets:/run/secrets:ro
     networks: [internal, tenants]
 
   # ── CManage Web (React + nginx) — panel.<domain> ──────────────────────────

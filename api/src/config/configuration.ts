@@ -23,6 +23,15 @@ export default () => ({
     webMemoryMb: parseInt(process.env.TENANT_WEB_MEMORY_MB ?? '128', 10),
   },
   webhookSecret: process.env.WEBHOOK_SECRET ?? '',
+  // PashaBank ECOMM sanal POS (mTLS). merchantHandler boşsa ödeme kapalı.
+  pasha: {
+    merchantHandler: process.env.PASHA_MERCHANT_HANDLER ?? '',
+    clientHandler: process.env.PASHA_CLIENT_HANDLER ?? 'https://ecomm.pashabank.az:8463/ecomm2/ClientHandler',
+    certPath: process.env.PASHA_CERT_PATH ?? '',
+    keyPath: process.env.PASHA_KEY_PATH ?? '',
+    keyPassphrase: process.env.PASHA_KEY_PASSPHRASE ?? '',
+    mock: process.env.PASHA_MOCK === 'true',
+  },
   smtp: {
     host: process.env.SMTP_HOST ?? '',
     port: parseInt(process.env.SMTP_PORT ?? '587', 10),

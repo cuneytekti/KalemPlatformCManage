@@ -5,6 +5,7 @@ const CONFIG = {
   prices: { user: 15, pos: 49, mobile: 19 },
   // Lokal test için: 'http://localhost:3000/api/leads'
   leadEndpoint: 'https://panel.kalemplatform.com/api/leads',
+  orderEndpoint: 'https://panel.kalemplatform.com/api/public/orders',
   leadEmail: 'info@kalemyazilim.az',
 };
 
@@ -106,6 +107,11 @@ I18N.tr = {
   'price.lead': 'Yalnız kullandığınız kadar ödeyin: kullanıcı + kasa + mobil terminal. Sunucu, güncelleme ve 7/24 destek dahildir.',
   'price.users': 'Kullanıcı', 'price.pos': 'POS kasa', 'price.mobile': 'Mobil terminal',
   'price.monthly': 'Aylık', 'price.cta': 'Bu konfigürasyonla teklif al',
+  'buy.cta': 'Hemen satın al', 'buy.title': 'Online abonelik',
+  'buy.lead': 'Ödemeden sonra ortamınız otomatik kurulur, giriş bilgileri e-postanıza gönderilir.',
+  'buy.company': 'Şirket adı', 'buy.email': 'E-posta', 'buy.slug': 'Subdomain',
+  'buy.pay': 'Ödemeye geç', 'buy.err': 'İşlem başarısız. Lütfen tekrar deneyin veya bize yazın:',
+  'buy.redirect': 'Banka ödeme sayfasına yönlendiriliyorsunuz...',
   'price.note': 'Fiyatlara KDV dahil değildir. Zincir marketler için özel kurumsal teklifler hazırlıyoruz.',
   'how.title': '3 adımda başlayın',
   'how.s1t': 'Başvurun', 'how.s1d': 'Formu doldurun — ekibimiz sizinle iletişime geçip ihtiyaçlarınızı dinler.',
@@ -215,6 +221,11 @@ I18N.en = {
   'price.lead': 'Pay only for what you use: users + registers + mobile terminals. Hosting, updates and 24/7 support included.',
   'price.users': 'Users', 'price.pos': 'POS registers', 'price.mobile': 'Mobile terminals',
   'price.monthly': 'Monthly', 'price.cta': 'Get a quote for this configuration',
+  'buy.cta': 'Buy now', 'buy.title': 'Online subscription',
+  'buy.lead': 'After payment your environment is provisioned automatically; credentials are e-mailed to you.',
+  'buy.company': 'Company name', 'buy.email': 'E-mail', 'buy.slug': 'Subdomain',
+  'buy.pay': 'Proceed to payment', 'buy.err': 'Operation failed. Please retry or contact us:',
+  'buy.redirect': 'Redirecting to the bank payment page...',
   'price.note': 'Prices exclude VAT. Custom corporate offers for market chains.',
   'how.title': 'Start in 3 steps',
   'how.s1t': 'Apply', 'how.s1d': 'Fill in the form — our team contacts you to understand your needs.',
@@ -314,4 +325,39 @@ document.getElementById('lead-form').addEventListener('submit', async (e) => {
   );
   status.textContent = t('c.mailOpen');
   window.location.href = `mailto:${CONFIG.leadEmail}?subject=${encodeURIComponent('Kalem Platform — Demo müraciəti: ' + data.company)}&body=${body}`;
+});
+
+/* Satın alma akışı — fiyat sunucuda yeniden hesaplanır, burası yalnız boyutları yollar */
+const buyForm = document.getElementById('buy-form');
+document.getElementById('buy-cta')?.addEventListener('click', () => {
+  buyForm.hidden = !buyForm.hidden;
+  if (!buyForm.hidden) buyForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+buyForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const lang = document.documentElement.lang;
+  const t = (k) => (I18N[lang] && I18N[lang][k]) || I18N.az[k] || k;
+  const status = document.getElementById('buy-status');
+  const data = Object.fromEntries(new FormData(buyForm).entries());
+  status.textContent = t('buy.redirect');
+  try {
+    const res = await fetch(CONFIG.orderEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyName: data.companyName,
+        contactEmail: data.contactEmail,
+        slug: data.slug.trim().toLowerCase(),
+        seats: +inputs.users.value,
+        posTerminals: +inputs.pos.value,
+        mobileTerminals: +inputs.mobile.value,
+        language: lang === 'az' || lang === 'tr' || lang === 'en' ? lang : 'az',
+      }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.redirectUrl) throw new Error(body.message || String(res.status));
+    window.location.href = body.redirectUrl;
+  } catch (err) {
+    status.textContent = `${t('buy.err')} ${CONFIG.leadEmail} (${err.message || err})`;
+  }
 });

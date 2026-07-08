@@ -282,7 +282,19 @@
         <span data-i18n="price.monthly">Aylıq</span>
         <b><span id="c-total">173</span> ₼</b>
         <a href="#contact" class="btn btn-primary" id="calc-cta" data-i18n="price.cta">Bu konfiqurasiya ilə təklif al</a>
+        <button type="button" class="btn btn-primary" id="buy-cta" data-i18n="buy.cta">İndi al</button>
       </div>
+      <form id="buy-form" class="buy-form" hidden>
+        <h3 data-i18n="buy.title">Onlayn abunəlik</h3>
+        <p class="muted small" data-i18n="buy.lead">Ödənişdən sonra mühitiniz avtomatik qurulur və giriş məlumatları e-poçtunuza göndərilir.</p>
+        <label><span data-i18n="buy.company">Şirkət adı</span><input name="companyName" required maxlength="120"></label>
+        <label><span data-i18n="buy.email">E-poçt</span><input name="contactEmail" type="email" required></label>
+        <label><span data-i18n="buy.slug">Subdomain</span>
+          <span class="slug-row"><input name="slug" required pattern="[a-z][a-z0-9-]{2,30}" placeholder="sirketiniz"><span class="muted">.kalemplatform.com</span></span>
+        </label>
+        <button class="btn btn-primary" data-i18n="buy.pay">Ödənişə keç</button>
+        <p id="buy-status" class="muted small"></p>
+      </form>
       <p class="muted small" data-i18n="price.note">Qiymətlərə ƏDV daxil deyil. Zəncir marketlər üçün xüsusi korporativ təkliflər hazırlayırıq.</p>
     </div>
   </section>
