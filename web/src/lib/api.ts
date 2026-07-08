@@ -183,6 +183,8 @@ export const api = {
       request<License[]>(`/licenses${tenantId ? `?tenantId=${tenantId}` : ''}`),
     create: (data: Partial<License>) =>
       request<License>('/licenses', { method: 'POST', body: JSON.stringify(data) }),
+    change: (id: string, data: { seats: number; posTerminals: number; mobileTerminals: number }) =>
+      request<License>(`/licenses/${id}/change`, { method: 'PATCH', body: JSON.stringify(data) }),
   },
   quotes: {
     list: () => request<Quote[]>('/quotes'),

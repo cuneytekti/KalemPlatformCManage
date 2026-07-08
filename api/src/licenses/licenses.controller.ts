@@ -40,6 +40,26 @@ class UpdateSeatsDto {
   seats: number;
 }
 
+class ChangeLicenseDto {
+  @IsInt() @Min(1) @Max(1000)
+  seats: number;
+
+  @IsInt() @Min(1) @Max(200)
+  posTerminals: number;
+
+  @IsInt() @Min(0) @Max(500)
+  mobileTerminals: number;
+
+  @IsOptional() @IsNumberString()
+  pricePerUser?: string;
+
+  @IsOptional() @IsNumberString()
+  pricePerPosTerminal?: string;
+
+  @IsOptional() @IsNumberString()
+  pricePerMobileTerminal?: string;
+}
+
 @Controller('licenses')
 export class LicensesController {
   constructor(private readonly licensesService: LicensesService) {}
@@ -56,6 +76,16 @@ export class LicensesController {
     return this.licensesService.create(dto);
   }
 
+  /**
+   * Boyut/fiyat değişikliği — geçmiş korunur (eski satır kapanır, yenisi açılır);
+   * dönemin DRAFT faturası pro-rata ile yeniden hesaplanır.
+   */
+  @Patch(':id/change')
+  change(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ChangeLicenseDto): Promise<License> {
+    return this.licensesService.change(id, dto);
+  }
+
+  /** @deprecated change() ucunu kullanın. */
   @Patch(':id/seats')
   updateSeats(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateSeatsDto): Promise<License> {
     return this.licensesService.updateSeats(id, dto.seats);
