@@ -78,7 +78,6 @@ services:
       db: { condition: service_healthy }
     environment:
       DATABASE_URL: postgres://cmanage:${CMANAGE_DB_PASSWORD}@db:5432/cmanage
-      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       DOCKER_HOST_URL: http://socket-proxy:2375
@@ -93,8 +92,8 @@ services:
       CMANAGE_JWT_SECRET: ${CMANAGE_JWT_SECRET:?}
       CMANAGE_ADMIN_EMAIL: ${CMANAGE_ADMIN_EMAIL:-admin@kalemplatform.com}
       CMANAGE_ADMIN_PASSWORD: ${CMANAGE_ADMIN_PASSWORD:?}
-      # Üretimde migration'a geçince 'false' yapın
-      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-true}
+      # Şema migration'larla yönetilir (InitialSchema mevcut); geliştirmede true yapılabilir
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Web sitesi demo formu panel API'sine cross-origin POST atar
       CMANAGE_CORS_ORIGINS: https://${BASE_DOMAIN},https://www.${BASE_DOMAIN},https://panel.${BASE_DOMAIN}

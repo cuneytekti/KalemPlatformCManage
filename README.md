@@ -64,6 +64,16 @@ cd api
 DATABASE_URL=postgres://... npm run migration:generate
 ```
 
+## VPS kurulumu ve smoke test
+
+Üretim kurulum rehberi: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+Kurulum sonrası doğrulama:
+
+```bash
+ADMIN_PASSWORD=... ./scripts/smoke-test.sh              # health + login + API
+ADMIN_PASSWORD=... SMOKE_TENANT=1 ./scripts/smoke-test.sh   # + uçtan uca tenant kurulumu
+```
+
 ## Test & CI
 
 ```bash
@@ -88,7 +98,7 @@ Docker imaj build kontrolü.
 - [x] Lisans kullanım toplayıcı (saatlik; Kalem /internal/license bekleniyor)
 - [x] Aylık fatura üretimi (cron + manuel) — pro-rata TODO
 - [x] Audit log + admin kullanıcı yönetimi + sistem metrikleri
-- [x] Migration altyapısı hazır (data-source.ts + DB_SYNCHRONIZE); ilk migration üretimi kaldı
+- [x] Migration altyapısı + ilk migration (InitialSchema; uygulama açılışta otomatik uygular)
 - [ ] Kalem API tarafı: KALEM_MAX_* zorlaması + /internal/license endpoint'i (Faz 2)
 - [ ] Fatura PDF + e-posta gönderimi (SMTP)
 - [ ] Satış web sitesi + ödeme entegrasyonu (Faz 4)
