@@ -56,9 +56,13 @@ export function TenantDetailPage() {
     e.preventDefault();
     if (!id) return;
     const form = new FormData(e.currentTarget);
+    const applyAt = (form.get('applyAt') === 'night' ? 'night' : 'now') as 'now' | 'night';
     const ok = await confirm({
       title: 'Lisans Güncelleme',
-      message: 'Container\'lar yeni limitlerle yeniden oluşturulacak (kısa kesinti). Devam edilsin mi?',
+      message:
+        applyAt === 'night'
+          ? 'Container\'lar bu gece 03:00 (Bakü) penceresinde yeniden oluşturulacak. Devam edilsin mi?'
+          : 'Container\'lar yeni limitlerle hemen yeniden oluşturulacak (kısa kesinti). Devam edilsin mi?',
       confirmLabel: 'Güncelle',
     });
     if (!ok) return;
@@ -68,8 +72,9 @@ export function TenantDetailPage() {
           licensedUsers: Number(form.get('users')),
           licensedPosTerminals: Number(form.get('pos')),
           licensedMobileTerminals: Number(form.get('mobile')),
+          applyAt,
         }),
-      'Yeniden yapılandırma kuyruğa alındı',
+      applyAt === 'night' ? 'Gece penceresine zamanlandı (03:00 Bakü)' : 'Yeniden yapılandırma kuyruğa alındı',
     );
   }
 
@@ -157,6 +162,12 @@ export function TenantDetailPage() {
             <label>Kullanıcı<input name="users" type="number" defaultValue={tenant.licensedUsers} min={1} max={1000} /></label>
             <label>POS Kasa<input name="pos" type="number" defaultValue={tenant.licensedPosTerminals} min={1} max={200} /></label>
             <label>Mobil Terminal<input name="mobile" type="number" defaultValue={tenant.licensedMobileTerminals} min={0} max={500} /></label>
+            <label>Uygulama Zamanı
+              <select name="applyAt" defaultValue="now">
+                <option value="now">Hemen (kısa kesinti)</option>
+                <option value="night">Gece 03:00 (Bakü)</option>
+              </select>
+            </label>
             <button>Güncelle ve Yeniden Yapılandır</button>
           </form>
           <p className="muted" style={{ marginBottom: 0 }}>

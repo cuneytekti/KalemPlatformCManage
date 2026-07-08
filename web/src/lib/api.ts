@@ -164,6 +164,7 @@ export const api = {
       request<Tenant>(`/tenants/${id}?dropDatabase=${dropDatabase}`, { method: 'DELETE' }),
     updateLicense: (id: string, data: {
       licensedUsers: number; licensedPosTerminals: number; licensedMobileTerminals: number;
+      applyAt?: 'now' | 'night';
     }) => request<Tenant>(`/tenants/${id}/license`, { method: 'PATCH', body: JSON.stringify(data) }),
   },
   usage: {

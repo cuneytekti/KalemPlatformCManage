@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { TenantStatus } from '../entities/tenant.entity';
-import { TenantsService } from './tenants.service';
+import { msUntilNextBakuNight, TenantsService } from './tenants.service';
 
 /** Tenant yaşam döngüsü durum makinesi smoke testleri (repo + docker mock'lu). */
 describe('TenantsService', () => {
@@ -18,6 +18,7 @@ describe('TenantsService', () => {
     removeTenantStackBySlug: jest.Mock;
   };
   let dbProvisioner: { dropTenantDatabase: jest.Mock };
+  let mail: { send: jest.Mock };
 
   const tenant = (over: Partial<Record<string, unknown>> = {}) => ({
     id: 't1',
@@ -44,11 +45,13 @@ describe('TenantsService', () => {
       removeTenantStackBySlug: jest.fn(),
     };
     dbProvisioner = { dropTenantDatabase: jest.fn() };
+    mail = { send: jest.fn(async () => true) };
     service = new TenantsService(
       repo as never,
       provisioning as never,
       docker as never,
       dbProvisioner as never,
+      mail as never,
     );
   });
 
@@ -135,6 +138,44 @@ describe('TenantsService', () => {
     });
   });
 
+  describe('updateLicense — zamanlama ve bildirim', () => {
+    it("applyAt='night': reconfigure bir sonraki 03:00 Bakü'ye zamanlanır", async () => {
+      repo.findOneBy.mockResolvedValue(tenant({ contactEmail: 'musteri@ornek.az' }));
+      await service.updateLicense('t1', {
+        licensedUsers: 10, licensedPosTerminals: 2, licensedMobileTerminals: 0, applyAt: 'night',
+      });
+      const opts = provisioning.enqueueReconfigure.mock.calls[0][1] as { delayMs: number };
+      expect(opts.delayMs).toBeGreaterThan(0);
+      expect(opts.delayMs).toBeLessThanOrEqual(86_400_000);
+      expect(mail.send).toHaveBeenCalledWith(
+        'musteri@ornek.az',
+        expect.stringContaining('Lisans güncellemesi'),
+        expect.stringContaining('03:00'),
+      );
+    });
+
+    it("applyAt verilmezse hemen uygulanır ve müşteri bilgilendirilir", async () => {
+      repo.findOneBy.mockResolvedValue(tenant({ contactEmail: 'musteri@ornek.az' }));
+      await service.updateLicense('t1', {
+        licensedUsers: 10, licensedPosTerminals: 2, licensedMobileTerminals: 0,
+      });
+      expect(provisioning.enqueueReconfigure).toHaveBeenCalledWith('t1', { delayMs: 0 });
+      expect(mail.send).toHaveBeenCalledWith(
+        'musteri@ornek.az',
+        expect.any(String),
+        expect.stringContaining('birkaç dakika'),
+      );
+    });
+
+    it('contactEmail yoksa e-posta atılmaz, akış kırılmaz', async () => {
+      repo.findOneBy.mockResolvedValue(tenant({ contactEmail: undefined }));
+      await service.updateLicense('t1', {
+        licensedUsers: 10, licensedPosTerminals: 2, licensedMobileTerminals: 0,
+      });
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+  });
+
   describe('updateLicense', () => {
     it('PENDING tenant için lisans güncellenemez', async () => {
       repo.findOneBy.mockResolvedValue(tenant({ status: TenantStatus.PENDING }));
@@ -157,7 +198,27 @@ describe('TenantsService', () => {
       expect(t.licensedUsers).toBe(10);
       expect(t.licensedPosTerminals).toBe(2);
       expect(t.licensedMobileTerminals).toBe(1);
-      expect(provisioning.enqueueReconfigure).toHaveBeenCalledWith('t1');
+      expect(provisioning.enqueueReconfigure).toHaveBeenCalledWith('t1', { delayMs: 0 });
     });
+  });
+});
+
+describe('msUntilNextBakuNight', () => {
+  it('03:00 Bakü öncesinde aynı gecenin penceresini hedefler', () => {
+    // 22:00 UTC = 02:00 Bakü → 1 saat sonra 03:00 Bakü (23:00 UTC)
+    const ms = msUntilNextBakuNight(new Date('2026-07-08T22:00:00Z'));
+    expect(ms).toBe(3_600_000);
+  });
+
+  it('03:00 Bakü sonrasında ertesi gecenin penceresini hedefler', () => {
+    // 08:00 UTC = 12:00 Bakü → ertesi 03:00 Bakü = 15 saat sonra
+    const ms = msUntilNextBakuNight(new Date('2026-07-08T08:00:00Z'));
+    expect(ms).toBe(15 * 3_600_000);
+  });
+
+  it('her zaman 0 < delay <= 24 saat aralığındadır', () => {
+    const ms = msUntilNextBakuNight();
+    expect(ms).toBeGreaterThan(0);
+    expect(ms).toBeLessThanOrEqual(86_400_000);
   });
 });

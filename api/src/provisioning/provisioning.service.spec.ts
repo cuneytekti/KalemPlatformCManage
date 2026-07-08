@@ -38,6 +38,17 @@ describe('ProvisioningService', () => {
     );
   });
 
+  it('enqueueReconfigure: delayMs verilirse BullMQ delay ayarlanır (gece penceresi)', async () => {
+    await service.enqueueReconfigure('t1', { delayMs: 7_200_000 });
+    expect(queue.add).toHaveBeenCalledWith(
+      'reconfigure-tenant',
+      expect.anything(),
+      expect.objectContaining({ delay: 7_200_000 }),
+    );
+    const created = jobs.create.mock.calls[0][0] as { currentStep?: string };
+    expect(created.currentStep).toContain('gece penceresi');
+  });
+
   it('log: satırı DB güncellemesine ve açık SSE akışına yazar', async () => {
     const stream = service.stream('t1');
     const next = firstValueFrom(stream);

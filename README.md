@@ -94,7 +94,7 @@ Docker imaj build kontrolü.
 
 - [x] Panel kimlik doğrulaması (JWT, scrypt şifre, ilk admin tohumlama) — 2FA sonraya
 - [x] Teklif PDF üretimi (az/tr/en, Playwright HTML→PDF)
-- [x] Tenant suspend/resume/delete/retry + lisans reconfigure akışları
+- [x] Tenant suspend/resume/delete/retry + lisans reconfigure (hemen / gece 03:00 penceresi + müşteri bildirimi)
 - [x] Lisans kullanım toplayıcı: servis token'lı /internal/license entegrasyonu + NEAR/OVER/DRIFT uyarıları (sözleşme: docs/INTERNAL_LICENSE_API.md)
 - [x] Aylık fatura üretimi (cron + manuel) + segment bazlı pro-rata (lisans geçmişi korunur)
 - [x] Audit log + admin kullanıcı yönetimi + sistem metrikleri

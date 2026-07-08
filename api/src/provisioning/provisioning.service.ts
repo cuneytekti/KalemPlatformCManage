@@ -30,14 +30,24 @@ export class ProvisioningService {
     return job;
   }
 
-  async enqueueReconfigure(tenantId: string): Promise<ProvisioningJob> {
+  /** delayMs verilirse iş o kadar geciktirilir (gece penceresi). */
+  async enqueueReconfigure(tenantId: string, opts?: { delayMs?: number }): Promise<ProvisioningJob> {
+    const delayMs = opts?.delayMs ?? 0;
     const job = await this.jobs.save(
-      this.jobs.create({ tenantId, status: JobStatus.QUEUED }),
+      this.jobs.create({
+        tenantId,
+        status: JobStatus.QUEUED,
+        currentStep:
+          delayMs > 0
+            ? `Zamanlandı: ${new Date(Date.now() + delayMs).toISOString()} (gece penceresi)`
+            : undefined,
+      }),
     );
     await this.queue.add('reconfigure-tenant', { tenantId, jobId: job.id }, {
       attempts: 1,
       removeOnComplete: 100,
       removeOnFail: false,
+      delay: delayMs > 0 ? delayMs : undefined,
     });
     return job;
   }
