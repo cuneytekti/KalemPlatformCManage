@@ -2,11 +2,16 @@
 # Kullanım: cp .env.example .env && docker compose up -d --build
 name: cmanage
 
+x-logging: &default-logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
 services:
 
   # ── Traefik: dinamik subdomain yönlendirme + wildcard TLS ─────────────────
   traefik:
     image: traefik:v3.3
+    logging: *default-logging
     container_name: cmanage-traefik
     restart: unless-stopped
     command:
@@ -33,6 +38,7 @@ services:
   # ── Docker Socket Proxy: API'nin Docker erişimini kısıtlar ────────────────
   socket-proxy:
     image: tecnativa/docker-socket-proxy:0.3
+    logging: *default-logging
     container_name: cmanage-socket-proxy
     restart: unless-stopped
     environment:
@@ -48,6 +54,7 @@ services:
   # ── CManage veritabanı + tenant veritabanları sunucusu ────────────────────
   db:
     image: postgres:16-alpine
+    logging: *default-logging
     container_name: cmanage-db
     restart: unless-stopped
     environment:
@@ -56,6 +63,7 @@ services:
       POSTGRES_PASSWORD: ${CMANAGE_DB_PASSWORD:?}
     volumes:
       - cmanage-pgdata:/var/lib/postgresql/data
+      - cmanage-backups:/backups
     networks: [internal, tenants]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cmanage"]
@@ -65,13 +73,19 @@ services:
 
   redis:
     image: redis:7-alpine
+    logging: *default-logging
     container_name: cmanage-redis
     restart: unless-stopped
+    # Kalıcılık: gece penceresine zamanlanmış işler restart'ta kaybolmasın
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - cmanage-redis:/data
     networks: [internal]
 
   # ── CManage API (NestJS) ───────────────────────────────────────────────────
   api:
     build: ./api
+    logging: *default-logging
     container_name: cmanage-api
     restart: unless-stopped
     depends_on:
@@ -114,6 +128,9 @@ services:
       DEFAULT_PRICE_USER: ${DEFAULT_PRICE_USER:-15.00}
       DEFAULT_PRICE_POS: ${DEFAULT_PRICE_POS:-49.00}
       DEFAULT_PRICE_MOBILE: ${DEFAULT_PRICE_MOBILE:-19.00}
+      # Yedekleme (gece 02:30 Bakü; retention gün)
+      BACKUP_ENABLED: ${BACKUP_ENABLED:-true}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
       # Fatura vadesi geçtikten N gün sonra oto-suspend (0 = kapalı)
       AUTO_SUSPEND_OVERDUE_DAYS: ${AUTO_SUSPEND_OVERDUE_DAYS:-0}
     volumes:
@@ -124,6 +141,7 @@ services:
   # ── CManage Web (React + nginx) — panel.<domain> ──────────────────────────
   web:
     build: ./web
+    logging: *default-logging
     container_name: cmanage-web
     restart: unless-stopped
     depends_on: [api]
@@ -139,6 +157,7 @@ services:
   # ── Satış web sitesi — kalemplatform.com + www ─────────────────────────────
   website:
     build: ./website
+    logging: *default-logging
     container_name: kalem-website
     restart: unless-stopped
     labels:
@@ -165,4 +184,6 @@ networks:
 
 volumes:
   cmanage-pgdata:
+  cmanage-backups:
+  cmanage-redis:
   traefik-acme:

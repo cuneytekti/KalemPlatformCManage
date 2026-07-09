@@ -51,6 +51,7 @@ export interface Lead {
 }
 
 export interface AdminUserInfo {
+  totpEnabled?: boolean;
   id: string;
   email: string;
   name: string;
@@ -138,10 +139,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   auth: {
-    login: (email: string, password: string) =>
+    login: (email: string, password: string, totpCode?: string) =>
       request<LoginResult>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, totpCode }),
       }),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<void>('/auth/change-password', {
@@ -191,6 +192,11 @@ export const api = {
       request<Lead>(`/leads/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     convertToQuote: (id: string) =>
       request<Quote>(`/leads/${id}/convert-to-quote`, { method: 'POST' }),
+  },
+  twoFactor: {
+    setup: () => request<{ secret: string; otpauthUrl: string }>('/auth/2fa/setup', { method: 'POST' }),
+    enable: (code: string) => request<void>('/auth/2fa/enable', { method: 'POST', body: JSON.stringify({ code }) }),
+    disable: (code: string) => request<void>('/auth/2fa/disable', { method: 'POST', body: JSON.stringify({ code }) }),
   },
   users: {
     list: () => request<AdminUserInfo[]>('/auth/users'),

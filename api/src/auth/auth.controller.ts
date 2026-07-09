@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { AdminUser } from '../entities/admin-user.entity';
 import type { Request } from 'express';
 import { AuthService, LoginResult } from './auth.service';
@@ -15,6 +15,15 @@ class LoginDto {
   @MinLength(6)
   @MaxLength(128)
   password: string;
+
+  /** 2FA etkinse zorunlu; 6 haneli TOTP kodu */
+  @IsOptional() @Matches(/^\d{6}$/)
+  totpCode?: string;
+}
+
+class TotpCodeDto {
+  @Matches(/^\d{6}$/, { message: '6 haneli doğrulama kodu girin' })
+  code: string;
 }
 
 class CreateUserDto {
@@ -47,7 +56,25 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   login(@Body() dto: LoginDto): Promise<LoginResult> {
-    return this.authService.login(dto.email, dto.password);
+    return this.authService.login(dto.email, dto.password, dto.totpCode);
+  }
+
+  /** 2FA kurulumu: sır + otpauth URL (QR üretimi panelde). */
+  @Post('2fa/setup')
+  setupTotp(@Req() req: Request & { user: JwtPayload }) {
+    return this.authService.setupTotp(req.user.sub);
+  }
+
+  @Post('2fa/enable')
+  @HttpCode(204)
+  async enableTotp(@Req() req: Request & { user: JwtPayload }, @Body() dto: TotpCodeDto): Promise<void> {
+    await this.authService.enableTotp(req.user.sub, dto.code);
+  }
+
+  @Post('2fa/disable')
+  @HttpCode(204)
+  async disableTotp(@Req() req: Request & { user: JwtPayload }, @Body() dto: TotpCodeDto): Promise<void> {
+    await this.authService.disableTotp(req.user.sub, dto.code);
   }
 
   @Get('me')

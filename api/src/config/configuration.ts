@@ -45,6 +45,10 @@ export default () => ({
     pos: process.env.DEFAULT_PRICE_POS ?? '49.00',
     mobile: process.env.DEFAULT_PRICE_MOBILE ?? '19.00',
   },
+  backup: {
+    enabled: process.env.BACKUP_ENABLED !== 'false',
+    retentionDays: parseInt(process.env.BACKUP_RETENTION_DAYS ?? '14', 10),
+  },
   // Fatura vadesi geçtikten N gün sonra tenant otomatik askıya alınır (0 = kapalı)
   autoSuspendOverdueDays: parseInt(process.env.AUTO_SUSPEND_OVERDUE_DAYS ?? '0', 10),
   // Panel JWT imza anahtarı — üretimde mutlaka güçlü bir değer verin

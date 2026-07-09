@@ -83,6 +83,20 @@ cd api && npm test        # birim testleri (jest)
 GitHub Actions (`.github/workflows/ci.yml`): API test+build, Web build,
 Docker imaj build kontrolü.
 
+## İşletme (Sprint 6 sertleştirme)
+
+- **Yedekleme:** her gece 02:30 Bakü, `cmanage-db` içinde `pg_dumpall | gzip`
+  → `cmanage-backups` volume'ü; `BACKUP_RETENTION_DAYS` (vars. 14) günden
+  eskiler silinir. Panel: `GET /api/system/backups`, elle: `POST /api/system/backups/run`.
+  Yedekleri düzenli olarak VPS DIŞINA da kopyalayın (örn. rclone ile object storage).
+- **Health izleme:** 5 dk'da bir ACTIVE tenant container'ları denetlenir;
+  düşen/eksik container'da admin'e e-posta (tekrarsız), toparlanınca bilgi.
+  Panel: `GET /api/system/health-alerts`.
+- **2FA:** Panel Kullanıcıları sayfasından kişi başına TOTP kurulumu
+  (Google Authenticator uyumlu). Girişte 6 haneli kod istenir.
+- **Loglar:** tüm compose servisleri ve tenant container'ları json-file
+  10MB×3 rotasyonlu. Redis appendonly + volume (zamanlanmış işler restart'ta korunur).
+
 ## Güvenlik notları
 
 - Rate limit: genel 120 istek/dk, login 5 deneme/dk
@@ -92,7 +106,7 @@ Docker imaj build kontrolü.
 
 ## Yol haritası / TODO
 
-- [x] Panel kimlik doğrulaması (JWT, scrypt şifre, ilk admin tohumlama) — 2FA sonraya
+- [x] Panel kimlik doğrulaması (JWT, scrypt, ilk admin tohumlama) + 2FA (TOTP, RFC 6238)
 - [x] Teklif PDF üretimi (az/tr/en, Playwright HTML→PDF)
 - [x] Tenant suspend/resume/delete/retry + lisans reconfigure (hemen / gece 03:00 penceresi + müşteri bildirimi)
 - [x] Lisans kullanım toplayıcı: servis token'lı /internal/license entegrasyonu + NEAR/OVER/DRIFT uyarıları (sözleşme: docs/INTERNAL_LICENSE_API.md)
@@ -102,6 +116,8 @@ Docker imaj build kontrolü.
 - [ ] Kalem API tarafı: KALEM_MAX_* zorlaması + /internal/license (Faz 2 — sözleşme hazır, KalemPlatform reposunda uygulanacak)
 - [x] Fatura PDF (az/tr/en) + e-posta gönderimi; gecikme hatırlatması + oto-suspend
 - [x] Satış sitesinden online satın alma: PashaBank ECOMM sanal POS → otomatik tenant kurulumu + karşılama e-postası
+- [x] Sertleştirme: gece pg_dumpall yedeği (retention'lı), container health izleme
+  + e-posta uyarısı, log rotasyonu, Redis AOF kalıcılığı
 - [ ] Çoklu host desteği (yerleştirme stratejisi)
 
 ## Ödeme entegrasyonu (PashaBank ECOMM)

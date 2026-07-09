@@ -52,6 +52,7 @@ export function UsersPage() {
               <td>{u.name}</td>
               <td>{u.email}</td>
               <td>{u.role}</td>
+              <td><span className={`badge ${u.totpEnabled ? 'ACTIVE' : 'PENDING'}`}>{u.totpEnabled ? 'Etkin' : 'Kapalı'}</span></td>
               <td>{new Date(u.createdAt).toLocaleDateString('tr-TR')}</td>
               <td>
                 {u.id !== me?.id && (

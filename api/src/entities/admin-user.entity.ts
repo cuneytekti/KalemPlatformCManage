@@ -18,6 +18,13 @@ export class AdminUser {
   @Column({ default: 'ADMIN' })
   role: string;
 
+  /** TOTP sırrı (AES-256-GCM şifreli); null = 2FA kurulmamış */
+  @Column({ nullable: true, select: false })
+  totpSecretEnc?: string;
+
+  @Column({ default: false })
+  totpEnabled: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
