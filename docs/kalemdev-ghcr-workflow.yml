@@ -1,0 +1,70 @@
+# KalemPlatformDev → .github/workflows/ghcr.yml olarak kaydedin.
+#
+# kalem-api ve kalem-backoffice-web imajlarını GHCR'ye build+push eder.
+# CManage compose'u bu imajları çeker:
+#   KALEM_API_IMAGE=ghcr.io/cuneytekti/kalem-api:latest
+#   KALEM_WEB_IMAGE=ghcr.io/cuneytekti/kalem-backoffice-web:latest
+#
+# GEREKEN UYARLAMA (repo push'landığında):
+#   - context / file yollarını gerçek klasör yapısına göre düzeltin
+#     (varsayım: api/ ve backoffice-web/ altında birer Dockerfile).
+#   - İlk push'tan sonra GitHub Packages'ta her iki paketi de
+#     "private" olarak işaretleyin (varsayılan görünürlüğü kontrol edin).
+#
+# GITHUB_TOKEN packages:write iznini job seviyesinde alır; ek secret gerekmez.
+
+name: GHCR imajları
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - image: kalem-api
+            context: ./api          # TODO: gerçek yol
+            dockerfile: ./api/Dockerfile
+          - image: kalem-backoffice-web
+            context: ./backoffice-web   # TODO: gerçek yol
+            dockerfile: ./backoffice-web/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=
+            type=semver,pattern={{version}}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max
