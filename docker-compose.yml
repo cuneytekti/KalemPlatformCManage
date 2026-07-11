@@ -173,6 +173,9 @@ services:
     logging: *default-logging
     container_name: kalem-website
     restart: unless-stopped
+    # Satış sitesi, panelin 8443 girişinden bağımsız olarak IP ile de açılır.
+    ports:
+      - "${CMANAGE_WEBSITE_PORT:-8089}:80"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.website.rule=Host(`${BASE_DOMAIN}`) || Host(`www.${BASE_DOMAIN}`)"

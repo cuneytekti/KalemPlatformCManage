@@ -33,6 +33,8 @@ Varsayılan CManage host portları Retail motoruyla çakışmayacak şekilde
 HTTP için `8088`, HTTPS için `8443` olarak ayrılmıştır. Gerekirse `.env`
 içindeki `CMANAGE_HTTP_PORT` ve `CMANAGE_HTTPS_PORT` değerleri değiştirilebilir.
 Traefik konteyner içinde 80/443 portlarını kullanmaya devam eder.
+Satış sitesi ayrıca IP üzerinden doğrudan erişim için varsayılan olarak
+`8089` host portunda yayınlanır (`CMANAGE_WEBSITE_PORT`).
 
 ## Provisioning akışı
 
