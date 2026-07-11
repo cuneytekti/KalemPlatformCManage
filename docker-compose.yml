@@ -159,6 +159,12 @@ services:
       - "traefik.http.routers.cmanage.tls.certresolver=letsencrypt"
       - "traefik.http.services.cmanage.loadbalancer.server.port=80"
       - "traefik.docker.network=cmanage-edge"
+      # Sunucu iç ağında domain/DNS hazır olmadan IP ile panel erişimi.
+      # Ayrı router ACME istemez; Traefik'in varsayılan sertifikasını kullanır.
+      - "traefik.http.routers.cmanage-ip.rule=Host(`192.168.25.154`)"
+      - "traefik.http.routers.cmanage-ip.entrypoints=websecure"
+      - "traefik.http.routers.cmanage-ip.tls=true"
+      - "traefik.http.routers.cmanage-ip.service=cmanage"
     networks: [edge, internal]
 
   # ── Satış web sitesi — kalemplatform.com + www ─────────────────────────────
