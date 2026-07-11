@@ -151,7 +151,7 @@ demo başvuru formu (`CONFIG.leadEndpoint` doldurulursa POST, boşsa mailto),
 KalemPlatformv1 işlevselliğine dayalı içerik (POS, offline, zincir mağaza,
 Logo Tiger/Netsis, NBASoft, e-kassa).
 
-Logo: `website/assets/logo.svg` vektörel yeniden çizimdir; orijinal logo
-dosyalarınızı aynı isimle bu klasöre koyarak değiştirebilirsiniz.
+Logo: `website/assets/kalem-logo.png` dosyası navbar, footer, favicon ve
+satış sitesi içi marka işaretinde ortak olarak kullanılır.
 
 Lokal önizleme: `cd website && python3 -m http.server 8090`
