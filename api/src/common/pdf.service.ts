@@ -12,7 +12,13 @@ export class PdfService {
         'PDF üretimi için Chromium gerekli: npx playwright-core install --with-deps chromium',
       );
     }
-    const browser = await chromium.launch();
+    const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+    const browser = await chromium.launch({
+      ...(executablePath ? { executablePath } : {}),
+      // Container root olmadan çalışsa da Chromium sandbox namespace'i
+      // her Docker hostunda kullanılamayabilir.
+      args: ['--no-sandbox'],
+    });
     try {
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle' });

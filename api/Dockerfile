@@ -8,7 +8,10 @@ RUN npm run build && npm prune --omit=dev
 
 FROM node:22-alpine
 WORKDIR /app
-RUN addgroup -S cmanage && adduser -S cmanage -G cmanage
+RUN apk add --no-cache chromium font-noto ca-certificates \
+    && addgroup -S cmanage \
+    && adduser -S cmanage -G cmanage
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 USER cmanage
