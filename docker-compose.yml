@@ -10,7 +10,7 @@ services:
 
   # ── Traefik: dinamik subdomain yönlendirme + wildcard TLS ─────────────────
   traefik:
-    image: traefik:v3.3
+    image: traefik:v3.6
     logging: *default-logging
     container_name: cmanage-traefik
     restart: unless-stopped
