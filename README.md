@@ -29,6 +29,11 @@ cp .env.example .env   # düzenleyin
 docker compose up -d --build
 ```
 
+Varsayılan CManage host portları Retail motoruyla çakışmayacak şekilde
+HTTP için `8088`, HTTPS için `8443` olarak ayrılmıştır. Gerekirse `.env`
+içindeki `CMANAGE_HTTP_PORT` ve `CMANAGE_HTTPS_PORT` değerleri değiştirilebilir.
+Traefik konteyner içinde 80/443 portlarını kullanmaya devam eder.
+
 ## Provisioning akışı
 
 Satış webhook'u veya panelden müşteri ekleme →
