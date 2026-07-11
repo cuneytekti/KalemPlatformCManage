@@ -188,7 +188,7 @@ services:
       - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
       - "traefik.http.routers.website.middlewares=www-redirect"
       - "traefik.docker.network=cmanage-edge"
-    networks: [edge]
+    networks: [edge, internal]
 
 networks:
   edge:

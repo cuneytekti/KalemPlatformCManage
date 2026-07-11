@@ -3,9 +3,9 @@
 
 const CONFIG = {
   prices: { user: 15, pos: 49, mobile: 19 },
-  // Lokal test için: 'http://localhost:3000/api/leads'
-  leadEndpoint: 'https://panel.kalemplatform.com/api/leads',
-  orderEndpoint: 'https://panel.kalemplatform.com/api/public/orders',
+  // Website nginx /api isteklerini Docker iç ağındaki CManage API'ye iletir.
+  leadEndpoint: '/api/leads',
+  orderEndpoint: '/api/public/orders',
   leadEmail: 'info@kalemyazilim.az',
 };
 
