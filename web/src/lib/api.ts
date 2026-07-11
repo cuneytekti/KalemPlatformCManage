@@ -12,7 +12,7 @@ export interface Tenant {
   licensedMobileTerminals: number;
   erpType: string;
   createdAt: string;
-  lastUsage?: { users?: number; posTerminals?: number; mobileTerminals?: number; fetchedAt?: string };
+  lastUsage?: { users?: number; posTerminals?: number; mobileTerminals?: number; fetchedAt?: string; alerts?: UsageAlert[] };
 }
 
 export interface SystemStats {
@@ -51,11 +51,27 @@ export interface Lead {
 }
 
 export interface AdminUserInfo {
+  totpEnabled?: boolean;
   id: string;
   email: string;
   name: string;
   role: string;
   createdAt: string;
+}
+
+export interface UsageAlert {
+  dimension: 'users' | 'posTerminals' | 'mobileTerminals';
+  used: number;
+  limit: number;
+  level: 'NEAR' | 'OVER' | 'DRIFT';
+}
+
+export interface TenantUsageAlerts {
+  tenantId: string;
+  slug: string;
+  name: string;
+  fetchedAt?: string;
+  alerts: UsageAlert[];
 }
 
 export interface License {
@@ -123,10 +139,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   auth: {
-    login: (email: string, password: string) =>
+    login: (email: string, password: string, totpCode?: string) =>
       request<LoginResult>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, totpCode }),
       }),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<void>('/auth/change-password', {
@@ -149,7 +165,12 @@ export const api = {
       request<Tenant>(`/tenants/${id}?dropDatabase=${dropDatabase}`, { method: 'DELETE' }),
     updateLicense: (id: string, data: {
       licensedUsers: number; licensedPosTerminals: number; licensedMobileTerminals: number;
+      applyAt?: 'now' | 'night';
     }) => request<Tenant>(`/tenants/${id}/license`, { method: 'PATCH', body: JSON.stringify(data) }),
+  },
+  usage: {
+    alerts: () => request<TenantUsageAlerts[]>('/usage/alerts'),
+    collect: () => request<{ collected: number; alerted: number }>('/usage/collect', { method: 'POST' }),
   },
   system: {
     stats: () => request<SystemStats>('/system/stats'),
@@ -172,6 +193,11 @@ export const api = {
     convertToQuote: (id: string) =>
       request<Quote>(`/leads/${id}/convert-to-quote`, { method: 'POST' }),
   },
+  twoFactor: {
+    setup: () => request<{ secret: string; otpauthUrl: string }>('/auth/2fa/setup', { method: 'POST' }),
+    enable: (code: string) => request<void>('/auth/2fa/enable', { method: 'POST', body: JSON.stringify({ code }) }),
+    disable: (code: string) => request<void>('/auth/2fa/disable', { method: 'POST', body: JSON.stringify({ code }) }),
+  },
   users: {
     list: () => request<AdminUserInfo[]>('/auth/users'),
     create: (data: { email: string; name: string; password: string }) =>
@@ -183,6 +209,8 @@ export const api = {
       request<License[]>(`/licenses${tenantId ? `?tenantId=${tenantId}` : ''}`),
     create: (data: Partial<License>) =>
       request<License>('/licenses', { method: 'POST', body: JSON.stringify(data) }),
+    change: (id: string, data: { seats: number; posTerminals: number; mobileTerminals: number }) =>
+      request<License>(`/licenses/${id}/change`, { method: 'PATCH', body: JSON.stringify(data) }),
   },
   quotes: {
     list: () => request<Quote[]>('/quotes'),

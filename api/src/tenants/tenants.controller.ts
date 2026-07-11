@@ -1,7 +1,7 @@
 import {
   Body, Controller, Delete, Get, MessageEvent, Param, ParseUUIDPipe, Post, Patch, Query, Sse,
 } from '@nestjs/common';
-import { IsInt, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Observable } from 'rxjs';
 import { Tenant } from '../entities/tenant.entity';
 import { ProvisioningService } from '../provisioning/provisioning.service';
@@ -17,6 +17,10 @@ class UpdateLicenseDto {
 
   @IsInt() @Min(0) @Max(500)
   licensedMobileTerminals: number;
+
+  /** 'now' (varsayılan): hemen · 'night': bir sonraki 03:00 Bakü penceresi */
+  @IsOptional() @IsIn(['now', 'night'])
+  applyAt?: 'now' | 'night';
 }
 
 @Controller('tenants')

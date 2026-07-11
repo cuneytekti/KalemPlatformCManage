@@ -14,6 +14,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { LeadsModule } from './leads/leads.module';
 import { MailModule } from './mail/mail.module';
 import { LicensesModule } from './licenses/licenses.module';
+import { PaymentsModule } from './payments/payments.module';
 import { ProvisioningModule } from './provisioning/provisioning.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { SystemModule } from './system/system.module';
@@ -67,6 +68,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     InvoicesModule,
     LeadsModule,
     TenantsModule,
+    PaymentsModule,
     ProvisioningModule,
     LicensesModule,
     QuotesModule,

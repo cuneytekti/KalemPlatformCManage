@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Tenant, TenantStatus } from '../entities/tenant.entity';
+import { MailService } from '../mail/mail.service';
 import { DbProvisionerService } from '../provisioning/db-provisioner.service';
 import { DockerService } from '../provisioning/docker.service';
 import { ProvisioningService } from '../provisioning/provisioning.service';
@@ -14,6 +15,19 @@ export interface UpdateLicenseInput {
   licensedUsers: number;
   licensedPosTerminals: number;
   licensedMobileTerminals: number;
+  /** 'now' (varsayılan) hemen uygular; 'night' bir sonraki 03:00 Bakü'ye zamanlar. */
+  applyAt?: 'now' | 'night';
+}
+
+/** Bakü UTC+4 (DST yok). Bir sonraki 03:00 Bakü'ye kalan süre (ms). */
+export function msUntilNextBakuNight(now: Date = new Date()): number {
+  const BAKU_OFFSET_MS = 4 * 3_600_000;
+  const NIGHT_HOUR = 3;
+  const baku = new Date(now.getTime() + BAKU_OFFSET_MS);
+  const target = Date.UTC(baku.getUTCFullYear(), baku.getUTCMonth(), baku.getUTCDate(), NIGHT_HOUR);
+  const targetUtc = target - BAKU_OFFSET_MS;
+  const next = targetUtc > now.getTime() ? targetUtc : targetUtc + 86_400_000;
+  return next - now.getTime();
 }
 
 @Injectable()
@@ -23,6 +37,7 @@ export class TenantsService {
     private readonly provisioning: ProvisioningService,
     private readonly docker: DockerService,
     private readonly dbProvisioner: DbProvisionerService,
+    private readonly mail: MailService,
   ) {}
 
   findAll(): Promise<Tenant[]> {
@@ -96,7 +111,11 @@ export class TenantsService {
     return this.tenants.save(tenant);
   }
 
-  /** Lisans boyutlarını günceller ve container'ları yeni ENV'lerle yeniden oluşturur. */
+  /**
+   * Lisans boyutlarını günceller ve container'ları yeni ENV'lerle yeniden
+   * oluşturur. applyAt='night' ise reconfigure bir sonraki 03:00 Bakü'ye
+   * zamanlanır (kısa kesinti gece penceresinde olur) ve müşteri bilgilendirilir.
+   */
   async updateLicense(id: string, input: UpdateLicenseInput): Promise<Tenant> {
     const tenant = await this.findOne(id);
     if (tenant.status !== TenantStatus.ACTIVE && tenant.status !== TenantStatus.SUSPENDED) {
@@ -106,7 +125,27 @@ export class TenantsService {
     tenant.licensedPosTerminals = input.licensedPosTerminals;
     tenant.licensedMobileTerminals = input.licensedMobileTerminals;
     await this.tenants.save(tenant);
-    await this.provisioning.enqueueReconfigure(tenant.id);
+
+    const night = input.applyAt === 'night';
+    const delayMs = night ? msUntilNextBakuNight() : 0;
+    await this.provisioning.enqueueReconfigure(tenant.id, { delayMs });
+
+    if (tenant.contactEmail) {
+      const when = night
+        ? `bu gece 03:00 (Bakü) civarında`
+        : `birkaç dakika içinde`;
+      void this.mail.send(
+        tenant.contactEmail,
+        'Kalem Platform — Lisans güncellemesi',
+        `Sayın ${tenant.name},
+
+Lisansınız güncellendi: ${input.licensedUsers} kullanıcı, ${input.licensedPosTerminals} POS kasa, ${input.licensedMobileTerminals} mobil terminal.
+
+Değişikliğin uygulanması sırasında ${when} kısa bir hizmet kesintisi (1-2 dk) yaşanabilir.
+
+Kalem Yazılım · 012 526 22 22 · info@kalemyazilim.az`,
+      );
+    }
     return tenant;
   }
 }

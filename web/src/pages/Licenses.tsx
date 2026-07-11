@@ -17,6 +17,22 @@ export function LicensesPage() {
 
   const tenantName = (id: string) => tenants.find((t) => t.id === id)?.name ?? id.slice(0, 8);
 
+  async function onChange(l: License) {
+    const seats = Number(window.prompt('Kullanıcı sayısı', String(l.seats)) ?? NaN);
+    if (!Number.isInteger(seats) || seats < 1) return;
+    const posTerminals = Number(window.prompt('POS kasa sayısı', String(l.posTerminals)) ?? NaN);
+    if (!Number.isInteger(posTerminals) || posTerminals < 1) return;
+    const mobileTerminals = Number(window.prompt('Mobil terminal sayısı', String(l.mobileTerminals)) ?? NaN);
+    if (!Number.isInteger(mobileTerminals) || mobileTerminals < 0) return;
+    try {
+      await api.licenses.change(l.id, { seats, posTerminals, mobileTerminals });
+      toast.success('Lisans güncellendi — dönemin taslak faturası pro-rata yeniden hesaplandı');
+      reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
   async function onCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
@@ -77,7 +93,7 @@ export function LicensesPage() {
         <thead>
           <tr>
             <th>Müşteri</th><th>Kullanıcı</th><th>Kasa</th><th>Mobil</th>
-            <th>Birim (K/Ka/M)</th><th>Başlangıç</th><th>Bitiş</th><th>Durum</th>
+            <th>Birim (K/Ka/M)</th><th>Başlangıç</th><th>Bitiş</th><th>Durum</th><th></th>
           </tr>
         </thead>
         <tbody>
@@ -91,6 +107,11 @@ export function LicensesPage() {
               <td>{l.validFrom}</td>
               <td>{l.validUntil ?? 'Süresiz'}</td>
               <td><span className={`badge ${l.status}`}>{l.status}</span></td>
+              <td>
+                {l.status === 'ACTIVE' && (
+                  <button className="ghost" onClick={() => void onChange(l)}>Değiştir</button>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

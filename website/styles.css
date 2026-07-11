@@ -253,3 +253,10 @@ input[type="range"] { accent-color: var(--teal); width: 100%; }
 
 /* Honeypot: görünmez form alanı (spam koruması) */
 #lead-form .hp { position: absolute; left: -9999px; height: 0; width: 0; opacity: 0; pointer-events: none; }
+
+/* Satın alma formu */
+.buy-form { margin-top: 16px; display: grid; gap: 10px; max-width: 460px; }
+.buy-form label { display: grid; gap: 4px; font-size: 14px; }
+.buy-form input { padding: 10px; border: 1px solid var(--line, #d7dbe0); border-radius: 8px; }
+.slug-row { display: flex; align-items: center; gap: 6px; }
+.slug-row input { flex: 1; }

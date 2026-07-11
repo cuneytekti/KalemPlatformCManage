@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from 'crypto';
 
 /**
  * Tenant sırları (DB şifresi, JWT secret) container yeniden oluşturma için
@@ -20,6 +20,15 @@ export class CryptoService {
     const cipher = createCipheriv('aes-256-gcm', this.key, iv);
     const data = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
     return [iv.toString('base64'), cipher.getAuthTag().toString('base64'), data.toString('base64')].join('.');
+  }
+
+  /**
+   * Panel→tenant servis token'ı: tenant JWT secret'ından HMAC ile türetilir.
+   * Kalem API aynı türetmeyi kendi KALEM_INTERNAL_TOKEN env'i ile alır;
+   * /internal/license bu token ile korunur (docs/INTERNAL_LICENSE_API.md).
+   */
+  internalLicenseToken(jwtSecret: string): string {
+    return createHmac('sha256', jwtSecret).update('kalem-internal-license').digest('hex');
   }
 
   decrypt(encrypted: string): string {

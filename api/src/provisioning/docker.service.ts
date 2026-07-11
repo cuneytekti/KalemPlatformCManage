@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Docker from 'dockerode';
+import { CryptoService } from '../common/crypto.service';
 import { Tenant } from '../entities/tenant.entity';
 
 export interface TenantRuntimeConfig {
@@ -20,7 +21,7 @@ export class DockerService {
     edgeNetwork: string; apiMemoryMb: number; webMemoryMb: number;
   };
 
-  constructor(config: ConfigService) {
+  constructor(config: ConfigService, private readonly crypto: CryptoService) {
     const hostUrl = config.get<string>('docker.hostUrl');
     if (hostUrl) {
       const url = new URL(hostUrl);
@@ -88,6 +89,7 @@ export class DockerService {
         `KALEM_DB_USERNAME=${tenant.dbUser}`,
         `KALEM_DB_PASSWORD=${runtime.dbPassword}`,
         `KALEM_JWT_SECRET=${runtime.jwtSecret}`,
+        `KALEM_INTERNAL_TOKEN=${this.crypto.internalLicenseToken(runtime.jwtSecret)}`,
         `KALEM_CORS_ORIGINS=https://${host}`,
         'KALEM_COOKIE_SECURE=true',
         `KALEM_ERP_TYPE=${tenant.erpType}`,
@@ -99,6 +101,7 @@ export class DockerService {
       Labels: { 'kalem.tenant': tenant.slug, 'kalem.role': 'api' },
       HostConfig: {
         RestartPolicy: { Name: 'unless-stopped' },
+        LogConfig: { Type: 'json-file', Config: { 'max-size': '10m', 'max-file': '3' } },
         Memory: this.cfg.apiMemoryMb * 1024 * 1024,
         NetworkMode: net,
       },
@@ -134,6 +137,7 @@ export class DockerService {
       },
       HostConfig: {
         RestartPolicy: { Name: 'unless-stopped' },
+        LogConfig: { Type: 'json-file', Config: { 'max-size': '10m', 'max-file': '3' } },
         Memory: this.cfg.webMemoryMb * 1024 * 1024,
         NetworkMode: net,
       },
@@ -161,6 +165,7 @@ export class DockerService {
         `KALEM_DB_USERNAME=${tenant.dbUser}`,
         `KALEM_DB_PASSWORD=${runtime.dbPassword}`,
         `KALEM_JWT_SECRET=${runtime.jwtSecret}`,
+        `KALEM_INTERNAL_TOKEN=${this.crypto.internalLicenseToken(runtime.jwtSecret)}`,
         `KALEM_CORS_ORIGINS=https://${host}`,
         'KALEM_COOKIE_SECURE=true',
         `KALEM_MAX_MOBILE_TERMINALS=${tenant.licensedMobileTerminals}`,
@@ -178,6 +183,7 @@ export class DockerService {
       },
       HostConfig: {
         RestartPolicy: { Name: 'unless-stopped' },
+        LogConfig: { Type: 'json-file', Config: { 'max-size': '10m', 'max-file': '3' } },
         Memory: this.cfg.apiMemoryMb * 1024 * 1024,
         NetworkMode: net,
       },
@@ -246,6 +252,26 @@ export class DockerService {
         state: c.State,
       })),
     };
+  }
+
+  /** Çalışan bir container içinde komut yürütür; stdout+stderr döner. */
+  async execInContainer(containerName: string, cmd: string[]): Promise<string> {
+    const container = this.docker.getContainer(containerName);
+    const exec = await container.exec({ Cmd: cmd, AttachStdout: true, AttachStderr: true });
+    const stream = await exec.start({});
+    const output: Buffer[] = [];
+    await new Promise<void>((resolve, reject) => {
+      stream.on('data', (chunk: Buffer) => output.push(chunk));
+      stream.on('end', resolve);
+      stream.on('error', reject);
+    });
+    const inspect = await exec.inspect();
+    // Docker multiplexed stream başlıklarını temizle (8 baytlık çerçeve başlıkları)
+    const raw = Buffer.concat(output).toString('utf8').replace(/[\x00-\x08]/g, '');
+    if (inspect.ExitCode !== 0) {
+      throw new Error(`exec '${cmd.join(' ')}' başarısız (kod ${inspect.ExitCode}): ${raw.slice(0, 500)}`);
+    }
+    return raw;
   }
 
   private async connectToNetwork(containerId: string, networkName: string): Promise<void> {

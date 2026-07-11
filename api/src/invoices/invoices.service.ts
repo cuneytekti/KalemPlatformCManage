@@ -10,6 +10,8 @@ import { MailService } from '../mail/mail.service';
 import { DockerService } from '../provisioning/docker.service';
 import { InvoiceLang, InvoicePdfService } from './invoice-pdf.service';
 
+const DAY_MS = 86_400_000;
+
 @Injectable()
 export class InvoicesService {
   private readonly logger = new Logger(InvoicesService.name);
@@ -37,9 +39,9 @@ export class InvoicesService {
   }
 
   /**
-   * Dönem faturaları: ACTIVE tenant × en güncel ACTIVE lisans.
+   * Dönem faturaları: ACTIVE tenant × dönemle kesişen lisans geçmişi.
    * Aynı tenant+dönem için mükerrer fatura oluşturulmaz (idempotent).
-   * TODO (Faz 5 devamı): dönem ortası lisans değişikliğinde pro-rata hesap.
+   * Dönem ortası lisans değişikliği segment bazlı pro-rata ile hesaplanır.
    */
   async generateForPeriod(period: string): Promise<Invoice[]> {
     if (!/^\d{4}-\d{2}$/.test(period)) throw new NotFoundException('Dönem formatı YYYY-MM olmalı');
@@ -50,51 +52,103 @@ export class InvoicesService {
       const existing = await this.invoices.findOneBy({ tenantId: tenant.id, period });
       if (existing) continue;
 
-      const license = await this.licenses.findOne({
-        where: { tenantId: tenant.id, status: LicenseStatus.ACTIVE },
-        order: { createdAt: 'DESC' },
-      });
-      if (!license) {
-        this.logger.warn(`${tenant.slug}: ACTIVE lisans yok, fatura atlandı`);
+      const computed = await this.computeForTenant(tenant.id, period);
+      if (!computed) {
+        this.logger.warn(`${tenant.slug}: dönemle kesişen lisans yok, fatura atlandı`);
         continue;
       }
-
-      const cents = (v: string) => Math.round(parseFloat(v) * 100);
-      // Pro-rata: lisans bu dönemin ortasında başladıysa kalan gün oranı uygulanır
-      const [year, month] = period.split('-').map(Number);
-      const daysInMonth = new Date(year, month, 0).getDate();
-      let ratio = 1;
-      if (license.validFrom?.startsWith(period)) {
-        const startDay = parseInt(license.validFrom.slice(8, 10), 10);
-        ratio = (daysInMonth - startDay + 1) / daysInMonth;
-      }
-      const prorated = ratio < 1;
-      const lineOf = (label: string, qty: number, unit: string): InvoiceLine => ({
-        label: prorated ? `${label} (pro-rata ${Math.round(ratio * 100)}%)` : label,
-        qty,
-        unitPrice: parseFloat(unit).toFixed(2),
-        total: ((Math.round(qty * cents(unit) * ratio)) / 100).toFixed(2),
-      });
-      const lines = [
-        lineOf('Kullanıcı lisansı', license.seats, license.pricePerUser),
-        lineOf('POS kasa', license.posTerminals, license.pricePerPosTerminal),
-        ...(license.mobileTerminals > 0
-          ? [lineOf('Mobil terminal', license.mobileTerminals, license.pricePerMobileTerminal)]
-          : []),
-      ];
-      const total = (lines.reduce((s, l) => s + cents(l.total), 0) / 100).toFixed(2);
-      const dueDate = `${period}-15`;
 
       created.push(
         await this.invoices.save(
           this.invoices.create({
-            tenantId: tenant.id, period, lines, total,
-            currency: license.currency, status: InvoiceStatus.DRAFT, dueDate,
+            tenantId: tenant.id,
+            period,
+            lines: computed.lines,
+            total: computed.total,
+            currency: computed.currency,
+            status: InvoiceStatus.DRAFT,
+            dueDate: `${period}-15`,
           }),
         ),
       );
     }
     return created;
+  }
+
+  /**
+   * Lisans değişikliği sonrası çağrılır: dönemin DRAFT faturasını
+   * segment bazlı pro-rata ile yeniden hesaplar. SENT/PAID faturalara dokunmaz.
+   */
+  async recalculateDraft(tenantId: string, period: string): Promise<Invoice | null> {
+    const invoice = await this.invoices.findOneBy({ tenantId, period });
+    if (!invoice || invoice.status !== InvoiceStatus.DRAFT) return null;
+    const computed = await this.computeForTenant(tenantId, period);
+    if (!computed) return null;
+    invoice.lines = computed.lines;
+    invoice.total = computed.total;
+    invoice.currency = computed.currency;
+    this.logger.log(`Fatura yeniden hesaplandı: tenant=${tenantId} dönem=${period} toplam=${computed.total}`);
+    return this.invoices.save(invoice);
+  }
+
+  /**
+   * Dönemle kesişen (CANCELLED olmayan) lisans segmentlerinden fatura kalemleri.
+   * Faturalama kuralı: validFrom dahil, validUntil HARİÇ (değişiklik günü yeni
+   * lisansa yazılır; çifte faturalama olmaz). Dönemi tam kapsayan tek lisansta
+   * oran 1'dir ve etiket eki yazılmaz.
+   */
+  private async computeForTenant(
+    tenantId: string,
+    period: string,
+  ): Promise<{ lines: InvoiceLine[]; total: string; currency: string } | null> {
+    const [year, month] = period.split('-').map(Number);
+    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const periodStart = Date.UTC(year, month - 1, 1);
+    const periodEndExclusive = Date.UTC(year, month, 1);
+
+    const overlapping = (
+      await this.licenses.find({ where: { tenantId }, order: { validFrom: 'ASC', createdAt: 'ASC' } })
+    ).filter((l) => {
+      if (l.status === LicenseStatus.CANCELLED) return false;
+      const from = Date.parse(l.validFrom);
+      const untilEx = l.validUntil ? Date.parse(l.validUntil) : Infinity;
+      return from < periodEndExclusive && untilEx > periodStart;
+    });
+    if (overlapping.length === 0) return null;
+
+    const cents = (v: string) => Math.round(parseFloat(v) * 100);
+    const fmt = (d: number) =>
+      `${String(new Date(d).getUTCDate()).padStart(2, '0')}.${String(month).padStart(2, '0')}`;
+    const lines: InvoiceLine[] = [];
+
+    for (const license of overlapping) {
+      const segStart = Math.max(Date.parse(license.validFrom), periodStart);
+      const segEndEx = Math.min(
+        license.validUntil ? Date.parse(license.validUntil) : periodEndExclusive,
+        periodEndExclusive,
+      );
+      const segDays = Math.round((segEndEx - segStart) / DAY_MS);
+      if (segDays <= 0) continue;
+      const ratio = segDays / daysInMonth;
+      const suffix =
+        ratio < 1 ? ` (pro-rata %${Math.round(ratio * 100)} · ${fmt(segStart)}–${fmt(segEndEx - DAY_MS)})` : '';
+
+      const lineOf = (label: string, qty: number, unit: string): InvoiceLine => ({
+        label: `${label}${suffix}`,
+        qty,
+        unitPrice: parseFloat(unit).toFixed(2),
+        total: (Math.round(qty * cents(unit) * ratio) / 100).toFixed(2),
+      });
+      lines.push(lineOf('Kullanıcı lisansı', license.seats, license.pricePerUser));
+      lines.push(lineOf('POS kasa', license.posTerminals, license.pricePerPosTerminal));
+      if (license.mobileTerminals > 0) {
+        lines.push(lineOf('Mobil terminal', license.mobileTerminals, license.pricePerMobileTerminal));
+      }
+    }
+    if (lines.length === 0) return null;
+
+    const total = (lines.reduce((s, l) => s + cents(l.total), 0) / 100).toFixed(2);
+    return { lines, total, currency: overlapping[overlapping.length - 1].currency };
   }
 
   async setStatus(id: string, status: InvoiceStatus): Promise<Invoice> {
@@ -147,7 +201,7 @@ Kalem Yazılım · 012 526 22 22 · info@kalemyazilim.az`,
   async autoSuspendOverdue(): Promise<void> {
     const days = this.config.get<number>('autoSuspendOverdueDays')!;
     if (!days || days <= 0) return;
-    const cutoff = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+    const cutoff = new Date(Date.now() - days * DAY_MS).toISOString().slice(0, 10);
     const overdue = await this.invoices
       .createQueryBuilder('i')
       .where('i.status = :st AND i."dueDate" < :cutoff', { st: InvoiceStatus.OVERDUE, cutoff })
@@ -166,15 +220,36 @@ Kalem Yazılım · 012 526 22 22 · info@kalemyazilim.az`,
     }
   }
 
-  /** Vadesi geçmiş SENT faturaları OVERDUE işaretler (günlük 07:00). */
+  /**
+   * Vadesi geçmiş SENT faturaları OVERDUE işaretler ve müşteriye gecikme
+   * hatırlatması e-postalar (günlük 07:00 Bakü).
+   */
   @Cron('0 7 * * *', { timeZone: 'Asia/Baku' })
   async markOverdue(): Promise<void> {
     const today = new Date().toISOString().slice(0, 10);
-    await this.invoices
-      .createQueryBuilder()
-      .update()
-      .set({ status: InvoiceStatus.OVERDUE })
-      .where('status = :sent AND "dueDate" < :today', { sent: InvoiceStatus.SENT, today })
-      .execute();
+    const lapsed = await this.invoices
+      .createQueryBuilder('i')
+      .where('i.status = :sent AND i."dueDate" < :today', { sent: InvoiceStatus.SENT, today })
+      .getMany();
+
+    for (const invoice of lapsed) {
+      invoice.status = InvoiceStatus.OVERDUE;
+      await this.invoices.save(invoice);
+      const tenant = await this.tenants.findOneBy({ id: invoice.tenantId });
+      if (!tenant) continue;
+      this.logger.warn(`Gecikmiş fatura: ${tenant.slug} ${invoice.period} (vade ${invoice.dueDate})`);
+      if (tenant.contactEmail) {
+        void this.mail.send(
+          tenant.contactEmail,
+          `Kalem Platform — Ödeme hatırlatması (${invoice.period})`,
+          `Sayın ${tenant.name},
+
+${invoice.period} dönemine ait ${invoice.total} ${invoice.currency} tutarındaki faturanızın son ödeme tarihi (${invoice.dueDate}) geçmiştir. En kısa sürede ödeme yapmanızı rica ederiz; aksi halde hizmetiniz askıya alınabilir.
+
+Kalem Yazılım · 012 526 22 22 · info@kalemyazilim.az`,
+        );
+      }
+    }
+    if (lapsed.length > 0) this.logger.log(`${lapsed.length} fatura OVERDUE işaretlendi`);
   }
 }
