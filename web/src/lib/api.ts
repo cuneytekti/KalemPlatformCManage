@@ -50,6 +50,38 @@ export interface Lead {
   createdAt: string;
 }
 
+
+export interface ClientInfo {
+  id: string;
+  presentationDate?: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  position?: string;
+  companyLegalName?: string;
+  companyWebsite?: string;
+  marketName?: string;
+  headOfficeStreet?: string;
+  headOfficeCity?: string;
+  marketCity?: string;
+  branchAddress?: string;
+  mainActivity?: string;
+  branchCount?: number;
+  cashRegisterCount?: number;
+  barcodeScannerCount?: number;
+  scaleCount?: number;
+  posTerminalCount?: number;
+  computerCount?: number;
+  hasServer?: boolean;
+  branchesCentralSystem?: boolean;
+  sendCommercialOffer?: boolean;
+  offerSent: boolean;
+  note?: string;
+  status: 'NEW' | 'CONTACTED' | 'CONVERTED' | 'CLOSED';
+  quoteId?: string;
+  createdAt: string;
+}
+
 export interface AdminUserInfo {
   totpEnabled?: boolean;
   id: string;
@@ -192,6 +224,17 @@ export const api = {
       request<Lead>(`/leads/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     convertToQuote: (id: string) =>
       request<Quote>(`/leads/${id}/convert-to-quote`, { method: 'POST' }),
+  },
+  clientInfo: {
+    list: () => request<ClientInfo[]>('/client-info'),
+    create: (data: Partial<ClientInfo>) =>
+      request<ClientInfo>('/client-info', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<ClientInfo>) =>
+      request<ClientInfo>(`/client-info/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    setStatus: (id: string, status: ClientInfo['status']) =>
+      request<ClientInfo>(`/client-info/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    convertToQuote: (id: string) =>
+      request<Quote>(`/client-info/${id}/convert-to-quote`, { method: 'POST' }),
   },
   twoFactor: {
     setup: () => request<{ secret: string; otpauthUrl: string }>('/auth/2fa/setup', { method: 'POST' }),

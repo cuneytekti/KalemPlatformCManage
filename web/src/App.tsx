@@ -3,6 +3,7 @@ import { Navigate, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
 import { ConfirmProvider } from './components/Confirm';
 import { ToastProvider } from './components/Toast';
 import { auth } from './lib/auth';
+import { ClientInfoPage } from './pages/ClientInfo';
 import { DashboardPage } from './pages/Dashboard';
 import { InvoicesPage } from './pages/Invoices';
 import { LeadsPage } from './pages/Leads';
@@ -34,6 +35,7 @@ function Layout({ children }: { children: ReactNode }) {
         <nav>
           <NavLink to="/" end>Genel Bakış</NavLink>
           <NavLink to="/leads">Başvurular</NavLink>
+          <NavLink to="/client-info">Müşteri Bilgi Toplama</NavLink>
           <NavLink to="/tenants">Müşteriler</NavLink>
           <NavLink to="/licenses">Lisanslar</NavLink>
           <NavLink to="/quotes">Teklifler</NavLink>
@@ -72,6 +74,7 @@ function AppRoutes() {
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/leads" element={<LeadsPage />} />
+                <Route path="/client-info" element={<ClientInfoPage />} />
                 <Route path="/tenants" element={<TenantsPage />} />
                 <Route path="/tenants/:id" element={<TenantDetailPage />} />
                 <Route path="/licenses" element={<LicensesPage />} />
