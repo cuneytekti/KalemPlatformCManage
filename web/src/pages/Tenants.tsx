@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
-import { EmptyState, Spinner } from '../components/ui';
+import { EmptyState, PageHeader, Spinner } from '../components/ui';
 import { api, Tenant } from '../lib/api';
 
 export function TenantsPage() {
@@ -42,8 +42,15 @@ export function TenantsPage() {
 
   return (
     <>
-      <h2>Müşteriler</h2>
+      <PageHeader
+        eyebrow="Müşteri yönetimi"
+        title="Müşteriler"
+        description="Yeni müşteri ortamları oluşturun ve mevcut tenant operasyonlarını yönetin."
+      />
       <div className="card">
+        <div className="section-heading">
+          <div><h3>Yeni müşteri kurulumu</h3><p>Kurulum bilgilerini girerek otomatik provisioning sürecini başlatın.</p></div>
+        </div>
         <form className="inline" onSubmit={onCreate}>
           <label>Firma adı<input name="name" required maxLength={120} /></label>
           <label>Subdomain<input name="slug" required pattern="[a-z][a-z0-9-]{2,30}" placeholder="musteri1" /></label>

@@ -34,19 +34,35 @@ export function LoginPage() {
 
   return (
     <div className="login-wrap">
-      <form className="card login-card" onSubmit={onSubmit}>
-        <h1>CManage</h1>
-        <p className="muted">Kalem Platform Yönetim Paneli</p>
-        <label>E-posta<input name="email" type="email" required autoFocus autoComplete="username" /></label>
-        <label>Şifre<input name="password" type="password" required autoComplete="current-password" /></label>
-        {needsTotp && (
-          <label>Doğrulama Kodu (2FA)
-            <input name="totpCode" inputMode="numeric" pattern="\d{6}" maxLength={6} placeholder="000000" autoComplete="one-time-code" autoFocus />
-          </label>
-        )}
-        {error && <p className="error">{error}</p>}
-        <button disabled={busy}>{busy ? 'Giriş yapılıyor…' : 'Giriş Yap'}</button>
-      </form>
+      <div className="login-shell">
+        <section className="login-brand">
+          <div className="login-brand-logo">
+            <img src="/kalem-logo.png" alt="" />
+            <div><strong>CManage</strong><span>Kalem Platform</span></div>
+          </div>
+          <div className="login-brand-copy">
+            <h1>Operasyonunuz tek merkezde.</h1>
+            <p>Müşteri, lisans, teklif, fatura ve sistem operasyonlarını güvenli bir yönetim deneyimiyle kontrol edin.</p>
+          </div>
+          <div className="login-brand-foot">© {new Date().getFullYear()} Kalem Platform · Kurumsal Yönetim Sistemleri</div>
+        </section>
+        <form className="login-card" onSubmit={onSubmit}>
+          <div>
+            <span className="page-eyebrow">Güvenli erişim</span>
+            <h2>Yönetim paneline giriş</h2>
+            <p>Yetkili hesabınızla devam edin.</p>
+          </div>
+          <label>E-posta<input name="email" type="email" required autoFocus autoComplete="username" placeholder="ad@kalemplatform.com" /></label>
+          <label>Şifre<input name="password" type="password" required autoComplete="current-password" placeholder="••••••••••" /></label>
+          {needsTotp && (
+            <label>Doğrulama Kodu (2FA)
+              <input name="totpCode" inputMode="numeric" pattern="\d{6}" maxLength={6} placeholder="000000" autoComplete="one-time-code" autoFocus />
+            </label>
+          )}
+          {error && <p className="error">{error}</p>}
+          <button disabled={busy}>{busy ? 'Giriş yapılıyor…' : 'Giriş Yap'}</button>
+        </form>
+      </div>
     </div>
   );
 }

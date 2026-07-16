@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Spinner } from '../components/ui';
+import { PageHeader, Spinner } from '../components/ui';
 import { api, SystemStats, Tenant, TenantUsageAlerts } from '../lib/api';
 
 const DIM_TR = { users: 'Kullanıcı', posTerminals: 'POS kasa', mobileTerminals: 'Mobil terminal' } as const;
@@ -25,7 +25,11 @@ export function DashboardPage() {
 
   return (
     <>
-      <h2>Genel Bakış</h2>
+      <PageHeader
+        eyebrow="Operasyon merkezi"
+        title="Genel Bakış"
+        description="Müşteri operasyonlarını, lisans kapasitesini ve sistem sağlığını tek ekrandan takip edin."
+      />
       {loading && <Spinner />}
       <div className="card stats">
         <div className="stat"><div className="num">{tenants.filter((t) => t.status !== 'DELETED').length}</div><div className="label">Toplam Müşteri</div></div>
@@ -36,8 +40,10 @@ export function DashboardPage() {
       </div>
       {usageAlerts.length > 0 && (
         <div className="card">
-          <h3>Lisans Uyarıları</h3>
-          <table>
+          <div className="section-heading">
+            <div><h3>Lisans Uyarıları</h3><p>Kapasite sınırına yaklaşan veya yeniden yapılandırılması gereken müşteriler.</p></div>
+          </div>
+          <div className="table-wrap"><table>
             <thead><tr><th>Müşteri</th><th>Boyut</th><th>Kullanım</th><th>Durum</th><th>Son ölçüm</th></tr></thead>
             <tbody>
               {usageAlerts.flatMap((t) =>
@@ -60,7 +66,7 @@ export function DashboardPage() {
                 )),
               )}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
       {stats && (
@@ -72,7 +78,7 @@ export function DashboardPage() {
             <div className="stat"><div className="num">{stats.images}</div><div className="label">İmaj</div></div>
           </div>
           {stats.kalemContainers.length > 0 && (
-            <table>
+            <div className="table-wrap"><table>
               <thead><tr><th>Container</th><th>Müşteri</th><th>Rol</th><th>Durum</th></tr></thead>
               <tbody>
                 {stats.kalemContainers.map((c) => (
@@ -84,7 +90,7 @@ export function DashboardPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </>
       )}

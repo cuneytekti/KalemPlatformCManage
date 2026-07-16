@@ -1,4 +1,15 @@
 import { ReactNode } from 'react';
+import {
+  BarChart3,
+  Building2,
+  ClipboardList,
+  FileText,
+  LogOut,
+  ReceiptText,
+  ScrollText,
+  ShieldCheck,
+  UserRoundCog,
+} from 'lucide-react';
 import { Navigate, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 import { ConfirmProvider } from './components/Confirm';
 import { ToastProvider } from './components/Toast';
@@ -31,23 +42,47 @@ function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <h1>CManage</h1>
+        <div className="brand">
+          <div className="brand-logo">
+            <img src="/kalem-logo.png" alt="" />
+          </div>
+          <div>
+            <h1>CManage</h1>
+            <span>Kalem Platform</span>
+          </div>
+        </div>
+        <div className="nav-label">Yönetim</div>
         <nav>
-          <NavLink to="/" end>Genel Bakış</NavLink>
-          <NavLink to="/leads">Başvurular</NavLink>
-          <NavLink to="/client-info">Müşteri Bilgi Toplama</NavLink>
-          <NavLink to="/tenants">Müşteriler</NavLink>
-          <NavLink to="/licenses">Lisanslar</NavLink>
-          <NavLink to="/quotes">Teklifler</NavLink>
-          <NavLink to="/invoices">Faturalar</NavLink>
-          <NavLink to="/users">Kullanıcılar</NavLink>
+          <NavLink to="/" end><BarChart3 size={18} /><span>Genel Bakış</span></NavLink>
+          <NavLink to="/leads"><ClipboardList size={18} /><span>Başvurular</span></NavLink>
+          <NavLink to="/client-info"><FileText size={18} /><span>Müşteri Bilgi Toplama</span></NavLink>
+          <NavLink to="/tenants"><Building2 size={18} /><span>Müşteriler</span></NavLink>
+          <NavLink to="/licenses"><ShieldCheck size={18} /><span>Lisanslar</span></NavLink>
+          <NavLink to="/quotes"><ScrollText size={18} /><span>Teklifler</span></NavLink>
+          <NavLink to="/invoices"><ReceiptText size={18} /><span>Faturalar</span></NavLink>
+          <NavLink to="/users"><UserRoundCog size={18} /><span>Kullanıcılar</span></NavLink>
         </nav>
         <div className="sidebar-footer">
-          <span className="muted">{user?.email}</span>
-          <button className="ghost" onClick={logout}>Çıkış</button>
+          <div className="user-avatar">{user?.email?.slice(0, 1).toUpperCase() ?? 'K'}</div>
+          <div className="user-copy">
+            <strong>Panel Kullanıcısı</strong>
+            <span>{user?.email}</span>
+          </div>
+          <button className="icon-button" onClick={logout} title="Çıkış yap" aria-label="Çıkış yap">
+            <LogOut size={18} />
+          </button>
         </div>
       </aside>
-      <main className="content">{children}</main>
+      <section className="workspace">
+        <div className="topbar">
+          <div>
+            <span className="topbar-kicker">Kalem Platform</span>
+            <strong>Merkezi Yönetim Paneli</strong>
+          </div>
+          <div className="system-pill"><span /> Sistem aktif</div>
+        </div>
+        <main className="content">{children}</main>
+      </section>
     </div>
   );
 }

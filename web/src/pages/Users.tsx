@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useConfirm } from '../components/Confirm';
 import { useToast } from '../components/Toast';
+import { PageHeader } from '../components/ui';
 import { AdminUserInfo, api } from '../lib/api';
 import { auth } from '../lib/auth';
 
@@ -34,8 +35,15 @@ export function UsersPage() {
 
   return (
     <>
-      <h2>Panel Kullanıcıları</h2>
+      <PageHeader
+        eyebrow="Erişim yönetimi"
+        title="Panel Kullanıcıları"
+        description="Yönetim paneline erişebilen yetkili kullanıcı hesaplarını yönetin."
+      />
       <div className="card">
+        <div className="section-heading">
+          <div><h3>Yeni kullanıcı</h3><p>Kurumsal panel erişimi için güvenli bir kullanıcı hesabı oluşturun.</p></div>
+        </div>
         <form className="inline" onSubmit={onCreate}>
           <label>Ad<input name="name" required maxLength={120} /></label>
           <label>E-posta<input name="email" type="email" required /></label>
@@ -44,7 +52,7 @@ export function UsersPage() {
         </form>
         {error && <p className="error">{error}</p>}
       </div>
-      <table>
+      <div className="table-wrap"><table>
         <thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th><th>Kayıt</th><th></th></tr></thead>
         <tbody>
           {users.map((u) => (
@@ -79,7 +87,7 @@ export function UsersPage() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </>
   );
 }

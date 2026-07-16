@@ -1,12 +1,14 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useToast } from '../components/Toast';
-import { EmptyState } from '../components/ui';
+import { EmptyState, PageHeader } from '../components/ui';
 import { api, License, Tenant } from '../lib/api';
 
 export function LicensesPage() {
   const [licenses, setLicenses] = useState<License[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState<License | null>(null);
+  const [editValues, setEditValues] = useState({ seats: 1, posTerminals: 1, mobileTerminals: 0 });
   const toast = useToast();
 
   const reload = () => {
@@ -17,16 +19,17 @@ export function LicensesPage() {
 
   const tenantName = (id: string) => tenants.find((t) => t.id === id)?.name ?? id.slice(0, 8);
 
-  async function onChange(l: License) {
-    const seats = Number(window.prompt('Kullanıcı sayısı', String(l.seats)) ?? NaN);
-    if (!Number.isInteger(seats) || seats < 1) return;
-    const posTerminals = Number(window.prompt('POS kasa sayısı', String(l.posTerminals)) ?? NaN);
-    if (!Number.isInteger(posTerminals) || posTerminals < 1) return;
-    const mobileTerminals = Number(window.prompt('Mobil terminal sayısı', String(l.mobileTerminals)) ?? NaN);
-    if (!Number.isInteger(mobileTerminals) || mobileTerminals < 0) return;
+  function openChange(l: License) {
+    setEditing(l);
+    setEditValues({ seats: l.seats, posTerminals: l.posTerminals, mobileTerminals: l.mobileTerminals });
+  }
+
+  async function onChange() {
+    if (!editing) return;
     try {
-      await api.licenses.change(l.id, { seats, posTerminals, mobileTerminals });
+      await api.licenses.change(editing.id, editValues);
       toast.success('Lisans güncellendi — dönemin taslak faturası pro-rata yeniden hesaplandı');
+      setEditing(null);
       reload();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));
@@ -59,8 +62,15 @@ export function LicensesPage() {
 
   return (
     <>
-      <h2>Lisanslar</h2>
+      <PageHeader
+        eyebrow="Kapasite yönetimi"
+        title="Lisanslar"
+        description="Müşteri lisanslarını, kullanım kapasitesini ve dönemsel fiyatlandırmayı yönetin."
+      />
       <div className="card">
+        <div className="section-heading">
+          <div><h3>Yeni lisans tanımı</h3><p>Müşteri kapasitesini ve geçerli birim fiyatları belirleyin.</p></div>
+        </div>
         <form className="inline" onSubmit={onCreate}>
           <label>Müşteri
             <select name="tenantId" required>
@@ -109,7 +119,7 @@ export function LicensesPage() {
               <td><span className={`badge ${l.status}`}>{l.status}</span></td>
               <td>
                 {l.status === 'ACTIVE' && (
-                  <button className="ghost" onClick={() => void onChange(l)}>Değiştir</button>
+                  <button className="ghost" onClick={() => openChange(l)}>Değiştir</button>
                 )}
               </td>
             </tr>
@@ -117,6 +127,35 @@ export function LicensesPage() {
         </tbody>
       </table>
       </div>
+      )}
+      {editing && (
+        <div className="modal-backdrop" onMouseDown={() => setEditing(null)}>
+          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="license-edit-title" onMouseDown={(e) => e.stopPropagation()}>
+            <span className="page-eyebrow">Kapasite güncelleme</span>
+            <h3 id="license-edit-title">{tenantName(editing.tenantId)} lisansı</h3>
+            <p>Yeni terminal ve kullanıcı adetleri mevcut faturalama dönemine uygulanacaktır.</p>
+            <form className="form-sections" onSubmit={(e) => { e.preventDefault(); void onChange(); }}>
+              <div className="form-grid">
+                <label className="field">Kullanıcı
+                  <input type="number" min={1} max={1000} value={editValues.seats}
+                    onChange={(e) => setEditValues({ ...editValues, seats: Number(e.target.value) })} />
+                </label>
+                <label className="field">POS Kasa
+                  <input type="number" min={1} max={200} value={editValues.posTerminals}
+                    onChange={(e) => setEditValues({ ...editValues, posTerminals: Number(e.target.value) })} />
+                </label>
+                <label className="field">Mobil Terminal
+                  <input type="number" min={0} max={500} value={editValues.mobileTerminals}
+                    onChange={(e) => setEditValues({ ...editValues, mobileTerminals: Number(e.target.value) })} />
+                </label>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="ghost" onClick={() => setEditing(null)}>Vazgeç</button>
+                <button type="submit">Lisansı Güncelle</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </>
   );

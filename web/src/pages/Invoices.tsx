@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useToast } from '../components/Toast';
-import { EmptyState } from '../components/ui';
+import { EmptyState, PageHeader } from '../components/ui';
 import { api, Invoice, Tenant } from '../lib/api';
 
 export function InvoicesPage() {
@@ -49,8 +49,15 @@ export function InvoicesPage() {
 
   return (
     <>
-      <h2>Faturalar</h2>
+      <PageHeader
+        eyebrow="Finans operasyonları"
+        title="Faturalar"
+        description="Dönem faturalarını oluşturun, teslim durumlarını izleyin ve tahsilat akışını yönetin."
+      />
       <div className="card">
+        <div className="section-heading">
+          <div><h3>Dönem faturalaması</h3><p>Otomatik planı beklemeden mevcut dönemi manuel oluşturabilirsiniz.</p></div>
+        </div>
         <p className="muted" style={{ marginTop: 0 }}>
           Her ayın 1'i 06:00'da otomatik oluşturulur. Manuel tetikleme:
         </p>
@@ -78,7 +85,7 @@ export function InvoicesPage() {
               <td><strong>{inv.total} {inv.currency}</strong></td>
               <td>{inv.dueDate ?? '—'}</td>
               <td><span className={`badge ${inv.status === 'PAID' ? 'ACTIVE' : inv.status === 'OVERDUE' ? 'FAILED' : inv.status}`}>{inv.status}</span></td>
-              <td style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <td><div className="action-cell">
                 <a href={api.invoices.pdfUrl(inv.id, 'az')} title="Fatura PDF">PDF</a>
                 {(inv.status === 'DRAFT' || inv.status === 'SENT' || inv.status === 'OVERDUE') && (
                   <button className="ghost" onClick={() => void sendEmail(inv)}>E-posta Gönder</button>
@@ -89,7 +96,7 @@ export function InvoicesPage() {
                 {(inv.status === 'SENT' || inv.status === 'OVERDUE') && (
                   <button onClick={() => void api.invoices.setStatus(inv.id, 'PAID').then(reload)}>Ödendi</button>
                 )}
-              </td>
+              </div></td>
             </tr>
           ))}
         </tbody>

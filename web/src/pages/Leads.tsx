@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
-import { EmptyState, Spinner } from '../components/ui';
+import { EmptyState, PageHeader, Spinner } from '../components/ui';
 import { api, Lead } from '../lib/api';
 
 const NEXT: Record<Lead['status'], { to: Lead['status']; label: string }[]> = {
@@ -49,8 +49,11 @@ export function LeadsPage() {
 
   return (
     <>
-      <h2>Başvurular</h2>
-      <p className="muted">Web sitesi demo formundan gelen satış başvuruları.</p>
+      <PageHeader
+        eyebrow="Satış operasyonları"
+        title="Başvurular"
+        description="Web sitesi demo formundan gelen satış taleplerini takip edin ve teklif sürecine taşıyın."
+      />
       {loading ? (
         <Spinner />
       ) : leads.length === 0 ? (
@@ -81,7 +84,7 @@ export function LeadsPage() {
                       {l.status}
                     </span>
                   </td>
-                  <td style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  <td><div className="action-cell">
                     {!l.quoteId && l.status !== 'CLOSED' && (
                       <button onClick={() => void convert(l)}>Teklife Dönüştür</button>
                     )}
@@ -89,7 +92,7 @@ export function LeadsPage() {
                     {NEXT[l.status].map((n) => (
                       <button key={n.to} className="ghost" onClick={() => void move(l, n.to)}>{n.label}</button>
                     ))}
-                  </td>
+                  </div></td>
                 </tr>
               ))}
             </tbody>

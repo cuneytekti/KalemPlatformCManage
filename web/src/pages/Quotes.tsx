@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
-import { EmptyState } from '../components/ui';
+import { EmptyState, PageHeader } from '../components/ui';
 import { api, Quote } from '../lib/api';
 
 export function QuotesPage() {
@@ -79,8 +79,15 @@ export function QuotesPage() {
 
   return (
     <>
-      <h2>Fiyat Teklifleri</h2>
+      <PageHeader
+        eyebrow="Ticari yönetim"
+        title="Fiyat Teklifleri"
+        description="Müşteri kapasitesine göre fiyatlandırma oluşturun, PDF üretin ve satış sürecini yönetin."
+      />
       <div className="card">
+        <div className="section-heading">
+          <div><h3>Yeni fiyat teklifi</h3><p>Lisans adetlerini ve birim fiyatları tanımlayın.</p></div>
+        </div>
         <form className="inline" onSubmit={onCreate}>
           <label>Müşteri<input name="customerName" required maxLength={120} /></label>
           <label>E-posta<input name="contactEmail" type="email" /></label>
@@ -142,7 +149,7 @@ export function QuotesPage() {
               <td><span className={`badge ${q.status}`}>{q.status}</span></td>
               <td>{new Date(q.createdAt).toLocaleDateString('tr-TR')}</td>
               <td>
-                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="action-cell">
                   {(['az', 'tr', 'en'] as const).map((lang) => (
                     <a key={lang} href={api.quotes.pdfUrl(q.id, lang)} title={`PDF (${lang})`}>
                       {lang.toUpperCase()}
@@ -159,7 +166,7 @@ export function QuotesPage() {
                   {q.tenantId && <span className="badge ACTIVE">Müşteri ✓</span>}
                 </div>
                 {convertId === q.id && (
-                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                  <div className="action-cell inline-convert">
                     <input
                       placeholder="subdomain (örn: musteri1)"
                       value={slug}

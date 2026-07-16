@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useConfirm } from '../components/Confirm';
 import { useToast } from '../components/Toast';
-import { Spinner } from '../components/ui';
+import { PageHeader, Spinner } from '../components/ui';
 import { api, Tenant } from '../lib/api';
 
 export function TenantDetailPage() {
@@ -107,9 +107,12 @@ export function TenantDetailPage() {
 
   return (
     <>
-      <h2>
-        {tenant.name} <span className={`badge ${tenant.status}`}>{tenant.status}</span>
-      </h2>
+      <PageHeader
+        eyebrow="Müşteri detayı"
+        title={tenant.name}
+        description={`${tenant.slug}.kalemplatform.com ortamının operasyon ve lisans yönetimi.`}
+        actions={<span className={`badge ${tenant.status}`}>{tenant.status}</span>}
+      />
 
       <div className="card">
         <p>
@@ -133,7 +136,7 @@ export function TenantDetailPage() {
             {tenant.lastUsage.mobileTerminals ?? '?'} mobil
           </p>
         )}
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        <div className="button-row">
           {tenant.status === 'ACTIVE' && (
             <button onClick={() => void run(() => api.tenants.suspend(id), 'Tenant askıya alındı')}>
               Askıya Al
@@ -157,7 +160,9 @@ export function TenantDetailPage() {
 
       {(tenant.status === 'ACTIVE' || tenant.status === 'SUSPENDED') && (
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>Lisans Güncelle</h3>
+          <div className="section-heading">
+            <div><h3>Lisans Güncelle</h3><p>Yeni kapasite limitlerini çalışma ortamına uygulayın.</p></div>
+          </div>
           <form className="inline" onSubmit={onLicenseSubmit}>
             <label>Kullanıcı<input name="users" type="number" defaultValue={tenant.licensedUsers} min={1} max={1000} /></label>
             <label>POS Kasa<input name="pos" type="number" defaultValue={tenant.licensedPosTerminals} min={1} max={200} /></label>
