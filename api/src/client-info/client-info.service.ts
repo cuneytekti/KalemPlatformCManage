@@ -65,6 +65,7 @@ export class ClientInfoService {
 
     const quote = await this.quotesService.create({
       customerName: record.companyLegalName || record.marketName || record.fullName,
+      contactName: record.fullName,
       contactEmail: record.email,
       seats: record.computerCount ?? 5,
       posTerminals: record.cashRegisterCount ?? 1,

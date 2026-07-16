@@ -7,6 +7,12 @@ export enum QuoteStatus {
   REJECTED = 'REJECTED',
 }
 
+export enum QuoteDiscountType {
+  NONE = 'NONE',
+  FIXED = 'FIXED',
+  PERCENT = 'PERCENT',
+}
+
 /**
  * Fiyat teklifi. Aylık toplam üç boyuttan hesaplanır:
  *   kullanıcı × birim + POS kasa × birim + mobil terminal × birim
@@ -16,8 +22,14 @@ export class Quote {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ unique: true })
+  quoteNumber: string;
+
   @Column()
   customerName: string;
+
+  @Column({ nullable: true })
+  contactName?: string;
 
   @Column({ nullable: true })
   contactEmail?: string;
@@ -46,6 +58,21 @@ export class Quote {
   @Column({ type: 'numeric', precision: 12, scale: 2 })
   monthlyTotal: string;
 
+  @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
+  setupFee: string;
+
+  @Column({ type: 'enum', enum: QuoteDiscountType, default: QuoteDiscountType.NONE })
+  discountType: QuoteDiscountType;
+
+  @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
+  discountValue: string;
+
+  @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
+  setupNetTotal: string;
+
+  @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
+  firstYearTotal: string;
+
   @Column({ default: 'AZN' })
   currency: string;
 
@@ -58,6 +85,12 @@ export class Quote {
 
   @Column({ type: 'text', nullable: true })
   notes?: string;
+
+  @Column({ type: 'text', default: 'Onay ve gerekli erişimlerin sağlanmasından sonra tahmini 45-65 iş günü.' })
+  projectDurationText: string;
+
+  @Column({ type: 'text', default: 'Kurulum bedelinin %50\'si siparişte, %50\'si canlı geçiş tamamlandığında ödenir.' })
+  paymentTermsText: string;
 
   @CreateDateColumn()
   createdAt: Date;

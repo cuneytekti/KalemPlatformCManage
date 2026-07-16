@@ -249,6 +249,19 @@ td strong { color: var(--navy-950); }
 .badge.FAILED, .badge.REJECTED, .badge.CANCELLED, .badge.CLOSED, .badge.OVERDUE, .badge.DELETED { color: var(--danger); border-color: #f1c0c7; background: var(--danger-soft); }
 
 form.inline { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; align-items: end; }
+.quote-form { margin-bottom: 1.5rem; }
+.quote-summary { display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)) 1.65fr; gap: 1px; overflow: hidden; color: var(--white); border-radius: var(--radius-lg); background: rgba(255,255,255,.18); box-shadow: var(--shadow-md); }
+.quote-summary > div { min-height: 104px; display: flex; flex-direction: column; justify-content: center; padding: 1.1rem 1.25rem; background: var(--navy-900); }
+.quote-summary span { color: #9bc9cf; font-size: .72rem; font-weight: 750; }
+.quote-summary strong { margin-top: .42rem; color: var(--white); font-size: 1.35rem; }
+.quote-summary-primary { background: linear-gradient(135deg, var(--teal-700), var(--teal-600)) !important; }
+.quote-summary-primary span { color: #d7f5f7; }
+.quote-summary-primary strong { font-size: 1.55rem; }
+.quote-submit { align-items: flex-start; gap: .4rem; background: var(--white) !important; }
+.quote-submit svg { color: var(--teal-700); }
+.quote-submit span { color: var(--slate-500); }
+.quote-submit button { width: 100%; margin-top: .4rem; }
+.quote-table td small { display: block; margin-top: .3rem; color: var(--slate-500); font-size: .68rem; }
 label { display: flex; flex-direction: column; gap: .42rem; color: var(--slate-700); font-size: .76rem; font-weight: 700; }
 input, select, textarea {
   width: 100%;
@@ -409,6 +422,8 @@ button.danger:hover:not(:disabled) { background: #ffe3e7; }
   .field { grid-column: span 6; }
   .field.wide { grid-column: 1 / -1; }
   .segmented-field { grid-column: span 6; }
+  .quote-summary { grid-template-columns: repeat(3, 1fr); }
+  .quote-submit { grid-column: 1 / -1; min-height: auto !important; }
 }
 
 @media (max-width: 760px) {
@@ -437,4 +452,6 @@ button.danger:hover:not(:disabled) { background: #ffe3e7; }
   .field, .field.half, .field.wide, .field.full, .segmented-field { grid-column: 1; }
   .form-modal-footer { align-items: stretch; flex-direction: column; }
   .form-modal-footer .button-row { display: grid; grid-template-columns: 1fr 1fr; }
+  .quote-summary { grid-template-columns: 1fr; }
+  .quote-submit { grid-column: auto; }
 }

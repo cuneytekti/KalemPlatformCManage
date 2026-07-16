@@ -124,7 +124,9 @@ export interface License {
 
 export interface Quote {
   id: string;
+  quoteNumber: string;
   customerName: string;
+  contactName?: string;
   contactEmail?: string;
   seats: number;
   posTerminals: number;
@@ -133,6 +135,13 @@ export interface Quote {
   pricePerPosTerminal: string;
   pricePerMobileTerminal: string;
   monthlyTotal: string;
+  setupFee: string;
+  discountType: 'NONE' | 'FIXED' | 'PERCENT';
+  discountValue: string;
+  setupNetTotal: string;
+  firstYearTotal: string;
+  projectDurationText: string;
+  paymentTermsText: string;
   currency: string;
   status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED';
   tenantId?: string;

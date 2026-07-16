@@ -2,13 +2,16 @@ import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res } 
 import type { Response } from 'express';
 import { IsEmail, IsEnum, IsIn, IsInt, IsNumberString, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
 import { Tenant } from '../entities/tenant.entity';
-import { Quote, QuoteStatus } from '../entities/quote.entity';
+import { Quote, QuoteDiscountType, QuoteStatus } from '../entities/quote.entity';
 import { QuotePdfService, QuoteLang } from './quote-pdf.service';
 import { QuotesService } from './quotes.service';
 
-class CreateQuoteDto {
+export class CreateQuoteDto {
   @IsString() @MaxLength(120)
   customerName: string;
+
+  @IsOptional() @IsString() @MaxLength(120)
+  contactName?: string;
 
   @IsOptional() @IsEmail()
   contactEmail?: string;
@@ -34,8 +37,23 @@ class CreateQuoteDto {
   @IsOptional() @IsString() @MaxLength(8)
   currency?: string;
 
-  @IsOptional() @IsString()
+  @IsOptional() @IsString() @MaxLength(1800)
   notes?: string;
+
+  @IsOptional() @IsNumberString()
+  setupFee?: string;
+
+  @IsOptional() @IsEnum(QuoteDiscountType)
+  discountType?: QuoteDiscountType;
+
+  @IsOptional() @IsNumberString()
+  discountValue?: string;
+
+  @IsOptional() @IsString() @MaxLength(1000)
+  projectDurationText?: string;
+
+  @IsOptional() @IsString() @MaxLength(1000)
+  paymentTermsText?: string;
 }
 
 class SetStatusDto {

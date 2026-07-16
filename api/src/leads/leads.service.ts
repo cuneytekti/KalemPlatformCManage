@@ -60,6 +60,7 @@ Panel: https://panel.kalemplatform.com/leads`,
 
     const quote = await this.quotesService.create({
       customerName: lead.company,
+      contactName: lead.name,
       contactEmail: lead.email,
       seats: num('users', 5),
       posTerminals: num('pos', 1),
