@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { ClientInfoModule } from './client-info/client-info.module';
 import configuration from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { InvoicesModule } from './invoices/invoices.module';
@@ -67,6 +68,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     UsageModule,
     InvoicesModule,
     LeadsModule,
+    ClientInfoModule,
     TenantsModule,
     PaymentsModule,
     ProvisioningModule,
