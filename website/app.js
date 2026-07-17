@@ -2,10 +2,8 @@
 'use strict';
 
 const CONFIG = {
-  prices: { user: 15, pos: 49, mobile: 19 },
   // Website nginx /api isteklerini Docker iç ağındaki CManage API'ye iletir.
   leadEndpoint: '/api/leads',
-  orderEndpoint: '/api/public/orders',
   leadEmail: 'info@kalemyazilim.az',
 };
 
@@ -15,7 +13,7 @@ const I18N = { az: {}, tr: {}, en: {} };
 I18N.tr = {
   'top.line': '7/24 destek hattı', 'top.loc': 'Bakü · İstanbul',
   'nav.why': 'Neden Kalem?', 'nav.modules': 'Modüller', 'nav.integrations': 'Entegrasyonlar',
-  'nav.pricing': 'Fiyatlar', 'nav.contact': 'İletişim', 'nav.demo': 'Demo iste',
+  'nav.pricing': 'Teklif', 'nav.contact': 'İletişim', 'nav.demo': 'Demo iste',
   'hero.eyebrow': '1989’dan beri · 2.000+ başarılı proje',
   'hero.title': 'Perakendeyi uçtan uca yöneten platform',
   'hero.lead': 'Kalem Platform, 1989’dan beri sahada kazanılan deneyimle geliştirilmiş, ERP\'den bağımsız çalışan perakende yönetim motorudur. Kasadan CRM\'e, satın almadan üretime ve yapay zekâ destekli yönetime kadar tüm operasyonlarınız tek platformda.',
@@ -103,21 +101,23 @@ I18N.tr = {
   'sec.b1': 'Uçtan uca şifreleme (aktarımda ve saklamada)',
   'sec.b2': 'Bilgi gizleme: rol bazlı veri maskeleme',
   'sec.b3': 'Müşteri başına tamamen izole ortam',
-  'price.title': 'Şeffaf, kullandığın kadar öde',
-  'price.lead': 'Yalnız kullandığınız kadar ödeyin: kullanıcı + kasa + mobil terminal. Sunucu, güncelleme ve 7/24 destek dahildir.',
+  'price.eyebrow': 'Kurumsal teklif',
+  'price.title': 'İhtiyacınıza uygun çözümü birlikte kuralım',
+  'price.lead': 'Şube, kullanıcı ve operasyon modelinizi değerlendirelim; yalnızca ihtiyaç duyduğunuz modüller için size özel teklif hazırlayalım.',
+  'price.f1': 'İhtiyaca uygun modüller', 'price.f2': 'Ölçeğe uygun lisanslama', 'price.f3': 'Geçiş ve eğitim planı',
   'price.users': 'Kullanıcı', 'price.pos': 'POS kasa', 'price.mobile': 'Mobil terminal',
-  'price.monthly': 'Aylık', 'price.cta': 'Bu konfigürasyonla teklif al',
+  'price.monthly': 'Aylık', 'price.cta': 'Teklif al',
   'buy.cta': 'Hemen satın al', 'buy.title': 'Online abonelik',
   'buy.lead': 'Ödemeden sonra ortamınız otomatik kurulur, giriş bilgileri e-postanıza gönderilir.',
   'buy.company': 'Şirket adı', 'buy.email': 'E-posta', 'buy.slug': 'Subdomain',
   'buy.pay': 'Ödemeye geç', 'buy.err': 'İşlem başarısız. Lütfen tekrar deneyin veya bize yazın:',
   'buy.redirect': 'Banka ödeme sayfasına yönlendiriliyorsunuz...',
-  'price.note': 'Fiyatlara KDV dahil değildir. Zincir marketler için özel kurumsal teklifler hazırlıyoruz.',
+  'price.note': 'Ekibimiz ihtiyaçlarınızı dinleyip uygun çözüm ve uygulama planını sunsun.',
   'how.title': '3 adımda başlayın',
   'how.s1t': 'Başvurun', 'how.s1d': 'Formu doldurun — ekibimiz sizinle iletişime geçip ihtiyaçlarınızı dinler.',
   'how.s2t': 'Ortamınız kurulur', 'how.s2d': 'Size özel güvenli ortam otomatik oluşturulur: <b>siz.kalemplatform.com</b>. Verileriniz tam izolasyonda tutulur.',
   'how.s3t': 'Satışa başlayın', 'how.s3d': 'Ürünlerinizi aktarın (CSV/ERP), kasaları bağlayın ve aynı gün satışa başlayın. Eğitim ve 7/24 destek bizden.',
-  'c.title': 'Demo başvurusu', 'c.lead': '1 iş günü içinde sizinle iletişime geçiyoruz. İsterseniz canlı demo ortamı da sunuyoruz.',
+  'c.title': 'Demo ve teklif başvurusu', 'c.lead': 'İhtiyacınızı paylaşın; 1 iş günü içinde sizinle iletişime geçip uygun çözümü birlikte belirleyelim.',
   'c.baku': 'Bakü Ofisi (Azerbaycan)', 'c.ist': 'İstanbul Ofisi (Türkiye)', 'c.line': '7/24 destek hattı',
   'c.name': 'Ad Soyad', 'c.company': 'Şirket / Mağaza', 'c.email': 'E-posta', 'c.phone': 'Telefon',
   'c.msg': 'Mesajınız', 'c.send': 'Gönder',
@@ -129,7 +129,7 @@ I18N.tr = {
 I18N.en = {
   'top.line': '24/7 support line', 'top.loc': 'Baku · Istanbul',
   'nav.why': 'Why Kalem?', 'nav.modules': 'Modules', 'nav.integrations': 'Integrations',
-  'nav.pricing': 'Pricing', 'nav.contact': 'Contact', 'nav.demo': 'Request demo',
+  'nav.pricing': 'Quote', 'nav.contact': 'Contact', 'nav.demo': 'Request demo',
   'hero.eyebrow': 'Since 1989 · 2,000+ successful projects',
   'hero.title': 'The platform that runs retail end to end',
   'hero.lead': 'Kalem Platform is an ERP-independent retail management engine shaped by field experience since 1989. From checkout and CRM to purchasing, production and AI-assisted management, every operation runs on one platform.',
@@ -217,21 +217,23 @@ I18N.en = {
   'sec.b1': 'End-to-end encryption (in transit and at rest)',
   'sec.b2': 'Information hiding: role-based data masking',
   'sec.b3': 'Fully isolated environment per customer',
-  'price.title': 'Transparent, pay-as-you-use pricing',
-  'price.lead': 'Pay only for what you use: users + registers + mobile terminals. Hosting, updates and 24/7 support included.',
+  'price.eyebrow': 'Corporate quote',
+  'price.title': 'Let’s shape the right solution for your business',
+  'price.lead': 'We assess your stores, users and operating model, then prepare a tailored proposal for only the modules you need.',
+  'price.f1': 'Modules matched to your needs', 'price.f2': 'Licensing that fits your scale', 'price.f3': 'Migration and training plan',
   'price.users': 'Users', 'price.pos': 'POS registers', 'price.mobile': 'Mobile terminals',
-  'price.monthly': 'Monthly', 'price.cta': 'Get a quote for this configuration',
+  'price.monthly': 'Monthly', 'price.cta': 'Request a quote',
   'buy.cta': 'Buy now', 'buy.title': 'Online subscription',
   'buy.lead': 'After payment your environment is provisioned automatically; credentials are e-mailed to you.',
   'buy.company': 'Company name', 'buy.email': 'E-mail', 'buy.slug': 'Subdomain',
   'buy.pay': 'Proceed to payment', 'buy.err': 'Operation failed. Please retry or contact us:',
   'buy.redirect': 'Redirecting to the bank payment page...',
-  'price.note': 'Prices exclude VAT. Custom corporate offers for market chains.',
+  'price.note': 'Our team will listen to your needs and present the right solution and implementation plan.',
   'how.title': 'Start in 3 steps',
   'how.s1t': 'Apply', 'how.s1d': 'Fill in the form — our team contacts you to understand your needs.',
   'how.s2t': 'Your environment is provisioned', 'how.s2d': 'A dedicated secure environment is created automatically: <b>you.kalemplatform.com</b>. Your data stays fully isolated.',
   'how.s3t': 'Start selling', 'how.s3d': 'Import your products (CSV/ERP), connect the registers and start selling the same day. Training and 24/7 support included.',
-  'c.title': 'Request a demo', 'c.lead': 'We get back to you within 1 business day. A live demo environment is available on request.',
+  'c.title': 'Request a demo or quote', 'c.lead': 'Tell us what you need; we will contact you within one business day to shape the right solution together.',
   'c.baku': 'Baku Office (Azerbaijan)', 'c.ist': 'Istanbul Office (Türkiye)', 'c.line': '24/7 support line',
   'c.name': 'Full name', 'c.company': 'Company / Store', 'c.email': 'Email', 'c.phone': 'Phone',
   'c.msg': 'Your message', 'c.send': 'Send',
@@ -254,6 +256,14 @@ Object.assign(I18N.az, {
   'group.supply': 'Təchizat və istehsal',
   'group.operations': 'Əməliyyat və proses',
   'group.intelligence': 'Analitika və süni intellekt',
+  'price.eyebrow': 'Korporativ təklif',
+  'price.title': 'Ehtiyacınıza uyğun həlli birlikdə quraq',
+  'price.lead': 'Filial, istifadəçi və əməliyyat modelinizi dəyərləndirək; yalnız ehtiyacınız olan modullar üçün sizə özəl təklif hazırlayaq.',
+  'price.f1': 'Ehtiyaca uyğun modullar',
+  'price.f2': 'Ölçəyə uyğun lisenziyalaşdırma',
+  'price.f3': 'Keçid və təlim planı',
+  'price.note': 'Komandamız tələblərinizi dinləyib uyğun həll və tətbiq planını təqdim etsin.',
+  'price.cta': 'Təklif al',
   'footer.tag': '1989-dan bəri · 2.000-dən çox layihə təcrübəsi',
 });
 
@@ -313,29 +323,10 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') setMenu(false);
 });
 
-/* Fiyat hesaplayıcı */
-const P = CONFIG.prices;
-document.getElementById('p-user').textContent = P.user;
-document.getElementById('p-pos').textContent = P.pos;
-document.getElementById('p-mobile').textContent = P.mobile;
-
-const inputs = {
-  users: document.getElementById('c-users'),
-  pos: document.getElementById('c-pos'),
-  mobile: document.getElementById('c-mobile'),
-};
-function recalc() {
-  const u = +inputs.users.value, k = +inputs.pos.value, m = +inputs.mobile.value;
-  document.getElementById('o-users').textContent = u;
-  document.getElementById('o-pos').textContent = k;
-  document.getElementById('o-mobile').textContent = m;
-  const total = u * P.user + k * P.pos + m * P.mobile;
-  document.getElementById('c-total').textContent = total;
-  document.getElementById('lead-config').value =
-    `users=${u}, pos=${k}, mobile=${m}, monthly=${total} AZN`;
-}
-Object.values(inputs).forEach((i) => i.addEventListener('input', recalc));
-recalc();
+/* Teklif CTA'sı formu teklif talebi olarak işaretler. */
+document.getElementById('quote-cta')?.addEventListener('click', () => {
+  document.getElementById('lead-config').value = 'request=corporate_quote';
+});
 
 /* Demo formu */
 document.getElementById('lead-form').addEventListener('submit', async (e) => {
@@ -366,39 +357,4 @@ document.getElementById('lead-form').addEventListener('submit', async (e) => {
   );
   status.textContent = t('c.mailOpen');
   window.location.href = `mailto:${CONFIG.leadEmail}?subject=${encodeURIComponent('Kalem Platform — Demo müraciəti: ' + data.company)}&body=${body}`;
-});
-
-/* Satın alma akışı — fiyat sunucuda yeniden hesaplanır, burası yalnız boyutları yollar */
-const buyForm = document.getElementById('buy-form');
-document.getElementById('buy-cta')?.addEventListener('click', () => {
-  buyForm.hidden = !buyForm.hidden;
-  if (!buyForm.hidden) buyForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-});
-buyForm?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const lang = document.documentElement.lang;
-  const t = (k) => (I18N[lang] && I18N[lang][k]) || I18N.az[k] || k;
-  const status = document.getElementById('buy-status');
-  const data = Object.fromEntries(new FormData(buyForm).entries());
-  status.textContent = t('buy.redirect');
-  try {
-    const res = await fetch(CONFIG.orderEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        companyName: data.companyName,
-        contactEmail: data.contactEmail,
-        slug: data.slug.trim().toLowerCase(),
-        seats: +inputs.users.value,
-        posTerminals: +inputs.pos.value,
-        mobileTerminals: +inputs.mobile.value,
-        language: lang === 'az' || lang === 'tr' || lang === 'en' ? lang : 'az',
-      }),
-    });
-    const body = await res.json();
-    if (!res.ok || !body.redirectUrl) throw new Error(body.message || String(res.status));
-    window.location.href = body.redirectUrl;
-  } catch (err) {
-    status.textContent = `${t('buy.err')} ${CONFIG.leadEmail} (${err.message || err})`;
-  }
 });

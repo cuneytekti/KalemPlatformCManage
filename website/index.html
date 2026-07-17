@@ -31,7 +31,7 @@
     <a href="#why" data-i18n="nav.why">Niyə Kalem?</a>
     <a href="#modules" data-i18n="nav.modules">Modullar</a>
     <a href="#integrations" data-i18n="nav.integrations">İnteqrasiyalar</a>
-    <a href="#pricing" data-i18n="nav.pricing">Qiymətlər</a>
+    <a href="#pricing" data-i18n="nav.pricing">Təklif</a>
     <a href="#contact" data-i18n="nav.contact">Əlaqə</a>
   </nav>
   <div class="nav-actions">
@@ -213,48 +213,23 @@
   </section>
 
   <!-- PRICING -->
-  <section id="pricing" class="section">
-    <h2 data-i18n="price.title">Şəffaf, istifadəyə görə qiymət</h2>
-    <p class="section-lead" data-i18n="price.lead">Yalnız istifadə etdiyiniz qədər ödəyin: istifadəçi + kassa + mobil terminal. Server, yenilənmə və 7/24 dəstək daxildir.</p>
-    <div class="calc card">
-      <div class="calc-rows">
-        <div class="calc-row">
-          <label data-i18n="price.users">İstifadəçi</label>
-          <input type="range" id="c-users" min="1" max="100" value="5" />
-          <output id="o-users">5</output>
-          <span class="unit"><span id="p-user">15</span> ₼/ay</span>
-        </div>
-        <div class="calc-row">
-          <label data-i18n="price.pos">POS kassa</label>
-          <input type="range" id="c-pos" min="1" max="50" value="2" />
-          <output id="o-pos">2</output>
-          <span class="unit"><span id="p-pos">49</span> ₼/ay</span>
-        </div>
-        <div class="calc-row">
-          <label data-i18n="price.mobile">Mobil terminal</label>
-          <input type="range" id="c-mobile" min="0" max="50" value="0" />
-          <output id="o-mobile">0</output>
-          <span class="unit"><span id="p-mobile">19</span> ₼/ay</span>
+  <section id="pricing" class="section quote-section">
+    <div class="quote-panel">
+      <div class="quote-copy">
+        <p class="eyebrow" data-i18n="price.eyebrow">Korporativ təklif</p>
+        <h2 data-i18n="price.title">Ehtiyacınıza uyğun həlli birlikdə quraq</h2>
+        <p data-i18n="price.lead">Filial, istifadəçi və əməliyyat modelinizi dəyərləndirək; yalnız ehtiyacınız olan modullar üçün sizə özəl təklif hazırlayaq.</p>
+        <div class="quote-benefits" aria-label="Təklif üstünlükləri">
+          <span data-i18n="price.f1">Ehtiyaca uyğun modullar</span>
+          <span data-i18n="price.f2">Ölçəyə uyğun lisenziyalaşdırma</span>
+          <span data-i18n="price.f3">Keçid və təlim planı</span>
         </div>
       </div>
-      <div class="calc-total">
-        <span data-i18n="price.monthly">Aylıq</span>
-        <b><span id="c-total">173</span> ₼</b>
-        <a href="#contact" class="btn btn-primary" id="calc-cta" data-i18n="price.cta">Bu konfiqurasiya ilə təklif al</a>
-        <button type="button" class="btn btn-primary" id="buy-cta" data-i18n="buy.cta">İndi al</button>
+      <div class="quote-action">
+        <span class="quote-mark" aria-hidden="true">↗</span>
+        <p data-i18n="price.note">Komandamız tələblərinizi dinləyib uyğun həll və tətbiq planını təqdim etsin.</p>
+        <a href="#contact" class="btn btn-primary btn-lg" id="quote-cta" data-i18n="price.cta">Təklif al</a>
       </div>
-      <form id="buy-form" class="buy-form" hidden>
-        <h3 data-i18n="buy.title">Onlayn abunəlik</h3>
-        <p class="muted small" data-i18n="buy.lead">Ödənişdən sonra mühitiniz avtomatik qurulur və giriş məlumatları e-poçtunuza göndərilir.</p>
-        <label><span data-i18n="buy.company">Şirkət adı</span><input name="companyName" required maxlength="120"></label>
-        <label><span data-i18n="buy.email">E-poçt</span><input name="contactEmail" type="email" required></label>
-        <label><span data-i18n="buy.slug">Subdomain</span>
-          <span class="slug-row"><input name="slug" required pattern="[a-z][a-z0-9-]{2,30}" placeholder="sirketiniz"><span class="muted">.kalemplatform.com</span></span>
-        </label>
-        <button class="btn btn-primary" data-i18n="buy.pay">Ödənişə keç</button>
-        <p id="buy-status" class="muted small"></p>
-      </form>
-      <p class="muted small" data-i18n="price.note">Qiymətlərə ƏDV daxil deyil. Zəncir marketlər üçün xüsusi korporativ təkliflər hazırlayırıq.</p>
     </div>
   </section>
 
@@ -272,8 +247,8 @@
   <section id="contact" class="section contact">
     <div class="contact-inner">
       <div>
-        <h2 data-i18n="c.title">Demo üçün müraciət</h2>
-        <p class="section-lead" data-i18n="c.lead">1 iş günü içində sizinlə əlaqə saxlayırıq. İstəsəniz canlı demo mühiti də təqdim edirik.</p>
+        <h2 data-i18n="c.title">Demo və təklif müraciəti</h2>
+        <p class="section-lead" data-i18n="c.lead">Ehtiyacınızı paylaşın; 1 iş günü içində sizinlə əlaqə saxlayaq və uyğun həlli birlikdə müəyyənləşdirək.</p>
         <div class="office">
           <h3 data-i18n="c.baku">Bakı Ofisi (Azərbaycan)</h3>
           <p class="muted">📍 Həydar Əliyev pros. 105-N B. 97 M.5, Nərimanov r., Bakı</p>
@@ -320,7 +295,7 @@
       <a href="#why" data-i18n="nav.why">Niyə Kalem?</a>
       <a href="#modules" data-i18n="nav.modules">Modullar</a>
       <a href="#integrations" data-i18n="nav.integrations">İnteqrasiyalar</a>
-      <a href="#pricing" data-i18n="nav.pricing">Qiymətlər</a>
+      <a href="#pricing" data-i18n="nav.pricing">Təklif</a>
       <a href="#contact" data-i18n="nav.contact">Əlaqə</a>
     </nav>
     <p class="muted small">© 2026 Kalem Yazılım · <span data-i18n="footer.rights">Bütün hüquqlar qorunur</span></p>
