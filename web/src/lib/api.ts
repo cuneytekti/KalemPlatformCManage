@@ -149,6 +149,21 @@ export interface Quote {
   createdAt: string;
 }
 
+export interface MailSettings {
+  enabled: boolean;
+  host: string;
+  port: number;
+  security: 'AUTO' | 'TLS' | 'STARTTLS' | 'NONE';
+  authEnabled: boolean;
+  username: string;
+  password?: string;
+  passwordConfigured: boolean;
+  fromName: string;
+  fromEmail: string;
+  source: 'ENV' | 'PANEL';
+  updatedAt?: string;
+}
+
 export interface LoginResult {
   accessToken: string;
   user: AuthUser;
@@ -276,5 +291,12 @@ export const api = {
       request<Quote>(`/quotes/${id}/send`, { method: 'POST', body: JSON.stringify({ lang }) }),
     convertToTenant: (id: string, slug: string) =>
       request<Tenant>(`/quotes/${id}/convert-to-tenant`, { method: 'POST', body: JSON.stringify({ slug }) }),
+  },
+  settings: {
+    getMail: () => request<MailSettings>('/settings/mail'),
+    saveMail: (data: Omit<MailSettings, 'passwordConfigured' | 'source' | 'updatedAt'>) =>
+      request<MailSettings>('/settings/mail', { method: 'PUT', body: JSON.stringify(data) }),
+    testMail: (data: Omit<MailSettings, 'passwordConfigured' | 'source' | 'updatedAt'> & { recipient: string }) =>
+      request<{ ok: true; message: string }>('/settings/mail/test', { method: 'POST', body: JSON.stringify(data) }),
   },
 };

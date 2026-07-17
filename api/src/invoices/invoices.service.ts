@@ -176,7 +176,7 @@ export class InvoicesService {
   async sendByEmail(id: string, lang: InvoiceLang): Promise<Invoice> {
     const { pdf, invoice, tenant } = await this.renderPdf(id, lang);
     if (!tenant.contactEmail) throw new BadRequestException('Müşterinin e-posta adresi yok');
-    if (!this.mail.enabled) throw new BadRequestException('SMTP yapılandırılmamış (SMTP_HOST)');
+    if (!this.mail.enabled) throw new BadRequestException('SMTP yapılandırılmamış. Ayarlar > Mail Ayarları bölümünü kontrol edin');
     const sent = await this.mail.send(
       tenant.contactEmail,
       `Kalem Platform — Fatura ${invoice.period} (${tenant.name})`,

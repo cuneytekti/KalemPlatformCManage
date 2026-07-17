@@ -31,7 +31,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
       useFactory: (cfg: ConfigService) => ({
         pinoHttp: {
           level: cfg.get<string>('logLevel'),
-          redact: ['req.headers.authorization', 'req.headers.cookie'],
+          redact: ['req.headers.authorization', 'req.headers.cookie', 'req.body.password'],
           autoLogging: { ignore: (req) => req.url === '/api/health' },
         },
       }),

@@ -127,7 +127,7 @@ export class QuotesService {
   async sendByEmail(id: string, lang: QuoteLang): Promise<Quote> {
     const quote = await this.findOne(id);
     if (!quote.contactEmail) throw new BadRequestException('Teklifte e-posta adresi yok');
-    if (!this.mail.enabled) throw new BadRequestException('SMTP yapılandırılmamış (SMTP_HOST)');
+    if (!this.mail.enabled) throw new BadRequestException('SMTP yapılandırılmamış. Ayarlar > Mail Ayarları bölümünü kontrol edin');
     const pdf = await this.pdfService.renderPdf(quote, lang);
     const sent = await this.mail.send(
       quote.contactEmail,
