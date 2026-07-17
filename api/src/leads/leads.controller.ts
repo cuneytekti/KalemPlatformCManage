@@ -4,6 +4,7 @@ import { IsEmail, IsEnum, IsOptional, IsString, MaxLength } from 'class-validato
 import { Public } from '../auth/public.decorator';
 import { Lead, LeadStatus } from '../entities/lead.entity';
 import { Quote } from '../entities/quote.entity';
+import { CreateQuoteDto } from '../quotes/quote-input.dto';
 import { LeadsService } from './leads.service';
 
 class CreateLeadDto {
@@ -59,10 +60,13 @@ export class LeadsController {
     return this.leadsService.findAll();
   }
 
-  /** Başvuruyu tek tıkla DRAFT teklife dönüştürür. */
+  /** Teklif formundaki değerlerle başvuruya bağlı DRAFT teklif oluşturur. */
   @Post(':id/convert-to-quote')
-  convertToQuote(@Param('id', ParseUUIDPipe) id: string): Promise<Quote> {
-    return this.leadsService.convertToQuote(id);
+  convertToQuote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateQuoteDto,
+  ): Promise<Quote> {
+    return this.leadsService.convertToQuote(id, dto);
   }
 
   @Patch(':id/status')

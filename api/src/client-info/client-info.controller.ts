@@ -5,6 +5,7 @@ import {
 } from 'class-validator';
 import { ClientInfo, ClientInfoStatus } from '../entities/client-info.entity';
 import { Quote } from '../entities/quote.entity';
+import { CreateQuoteDto } from '../quotes/quote-input.dto';
 import { ClientInfoService } from './client-info.service';
 
 class CreateClientInfoDto {
@@ -131,9 +132,12 @@ export class ClientInfoController {
     return this.service.setStatus(id, dto.status);
   }
 
-  /** Kaydı tek tıkla DRAFT teklife dönüştürür. */
+  /** Teklif formundaki değerlerle bilgi kaydına bağlı DRAFT teklif oluşturur. */
   @Post(':id/convert-to-quote')
-  convertToQuote(@Param('id', ParseUUIDPipe) id: string): Promise<Quote> {
-    return this.service.convertToQuote(id);
+  convertToQuote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateQuoteDto,
+  ): Promise<Quote> {
+    return this.service.convertToQuote(id, dto);
   }
 }

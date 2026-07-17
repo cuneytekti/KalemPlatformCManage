@@ -150,14 +150,8 @@ export function ClientInfoPage() {
     }
   }
 
-  async function convert(r: ClientInfo) {
-    try {
-      await api.clientInfo.convertToQuote(r.id);
-      toast.success(`${r.companyLegalName || r.marketName || r.fullName} için taslak teklif oluşturuldu`);
-      navigate('/quotes');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    }
+  function convert() {
+    navigate('/quotes');
   }
 
   async function move(r: ClientInfo, to: ClientInfo['status']) {
@@ -239,8 +233,8 @@ export function ClientInfoPage() {
                   <td><span className={`badge ${r.status}`}>{r.status}</span></td>
                   <td>
                     <div className="action-cell">
-                      {!r.quoteId && r.status !== 'CLOSED' && (
-                        <button onClick={() => void convert(r)}>Teklife Dönüştür</button>
+                      {!r.quoteId && r.status !== 'CLOSED' && r.sendCommercialOffer && (
+                        <button onClick={convert}>Tekliflere Git</button>
                       )}
                       {r.quoteId && <span className="badge SENT">Teklif ✓</span>}
                       {NEXT[r.status].map((n) => (

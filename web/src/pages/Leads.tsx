@@ -27,14 +27,8 @@ export function LeadsPage() {
     void api.leads.list().then(setLeads).catch(() => setLeads([])).finally(() => setLoading(false));
   useEffect(reload, []);
 
-  async function convert(lead: Lead) {
-    try {
-      await api.leads.convertToQuote(lead.id);
-      toast.success(`${lead.company} için taslak teklif oluşturuldu`);
-      navigate('/quotes');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    }
+  function convert() {
+    navigate('/quotes');
   }
 
   async function move(lead: Lead, to: Lead['status']) {
@@ -86,7 +80,7 @@ export function LeadsPage() {
                   </td>
                   <td><div className="action-cell">
                     {!l.quoteId && l.status !== 'CLOSED' && (
-                      <button onClick={() => void convert(l)}>Teklife Dönüştür</button>
+                      <button onClick={convert}>Tekliflere Git</button>
                     )}
                     {l.quoteId && <span className="badge SENT">Teklif ✓</span>}
                     {NEXT[l.status].map((n) => (

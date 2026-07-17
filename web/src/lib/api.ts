@@ -231,8 +231,8 @@ export const api = {
     list: () => request<Lead[]>('/leads'),
     setStatus: (id: string, status: Lead['status']) =>
       request<Lead>(`/leads/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-    convertToQuote: (id: string) =>
-      request<Quote>(`/leads/${id}/convert-to-quote`, { method: 'POST' }),
+    convertToQuote: (id: string, data: Partial<Quote>) =>
+      request<Quote>(`/leads/${id}/convert-to-quote`, { method: 'POST', body: JSON.stringify(data) }),
   },
   clientInfo: {
     list: () => request<ClientInfo[]>('/client-info'),
@@ -242,8 +242,8 @@ export const api = {
       request<ClientInfo>(`/client-info/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     setStatus: (id: string, status: ClientInfo['status']) =>
       request<ClientInfo>(`/client-info/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-    convertToQuote: (id: string) =>
-      request<Quote>(`/client-info/${id}/convert-to-quote`, { method: 'POST' }),
+    convertToQuote: (id: string, data: Partial<Quote>) =>
+      request<Quote>(`/client-info/${id}/convert-to-quote`, { method: 'POST', body: JSON.stringify(data) }),
   },
   twoFactor: {
     setup: () => request<{ secret: string; otpauthUrl: string }>('/auth/2fa/setup', { method: 'POST' }),

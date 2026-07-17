@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { Lead, LeadStatus } from '../entities/lead.entity';
 import { Quote } from '../entities/quote.entity';
 import { MailService } from '../mail/mail.service';
-import { QuotesService } from '../quotes/quotes.service';
+import { QuoteInput, QuotesService } from '../quotes/quotes.service';
 
 @Injectable()
 export class LeadsService {
@@ -42,35 +42,13 @@ Panel: https://panel.kalemplatform.com/leads`,
     return lead;
   }
 
-  /**
-   * Başvuruyu tek tıkla teklife dönüştürür: hesaplayıcı konfigürasyonu
-   * miktarlara ayrıştırılır, varsayılan birim fiyatlarla DRAFT teklif oluşur.
-   */
-  async convertToQuote(id: string): Promise<Quote> {
+  /** Başvuruyu, teklif formunda onaylanan değerlerle teklife dönüştürür. */
+  async convertToQuote(id: string, input: QuoteInput): Promise<Quote> {
     const lead = await this.leads.findOneBy({ id });
     if (!lead) throw new NotFoundException('Başvuru bulunamadı');
     if (lead.quoteId) throw new BadRequestException('Bu başvuru zaten teklife dönüştürülmüş');
 
-    // "users=5, pos=2, mobile=0, monthly=173 AZN" → miktarlar
-    const num = (key: string, fallback: number) => {
-      const m = lead.config?.match(new RegExp(`${key}=(\d+)`));
-      return m ? parseInt(m[1], 10) : fallback;
-    };
-    const prices = this.config.get<{ user: string; pos: string; mobile: string }>('defaultPrices')!;
-
-    const quote = await this.quotesService.create({
-      customerName: lead.company,
-      contactName: lead.name,
-      contactEmail: lead.email,
-      seats: num('users', 5),
-      posTerminals: num('pos', 1),
-      mobileTerminals: num('mobile', 0),
-      pricePerUser: prices.user,
-      pricePerPosTerminal: prices.pos,
-      pricePerMobileTerminal: prices.mobile,
-      currency: 'AZN',
-      notes: `Web başvurusu (${lead.name}${lead.phone ? ', ' + lead.phone : ''})${lead.message ? ': ' + lead.message : ''}`,
-    });
+    const quote = await this.quotesService.create(input);
 
     lead.quoteId = quote.id;
     if (lead.status === LeadStatus.NEW) lead.status = LeadStatus.CONTACTED;
