@@ -16,24 +16,24 @@ I18N.tr = {
   'top.line': '7/24 destek hattı', 'top.loc': 'Bakü · İstanbul',
   'nav.why': 'Neden Kalem?', 'nav.modules': 'Modüller', 'nav.integrations': 'Entegrasyonlar',
   'nav.pricing': 'Fiyatlar', 'nav.contact': 'İletişim', 'nav.demo': 'Demo iste',
-  'hero.eyebrow': '36+ ülke · 40 yılı aşkın perakende tecrübesi',
+  'hero.eyebrow': '1989’dan beri · 2.000+ başarılı proje',
   'hero.title': 'Perakendeyi uçtan uca yöneten platform',
-  'hero.lead': 'Kalem Platform — 40 yıllık sektör tecrübesiyle hazırlanmış, ERP\'den bağımsız çalışan perakende yönetim motorudur. Kasadan CRM\'e, satınalmadan üretime, süreç onaylarından yapay zekâ destekli yönetime kadar tüm operasyonlarınız tek platformda.',
+  'hero.lead': 'Kalem Platform, 1989’dan beri sahada kazanılan deneyimle geliştirilmiş, ERP\'den bağımsız çalışan perakende yönetim motorudur. Kasadan CRM\'e, satın almadan üretime ve yapay zekâ destekli yönetime kadar tüm operasyonlarınız tek platformda.',
   'hero.cta1': 'Demo planla', 'hero.cta2': 'Modülleri keşfet',
   'hero.b1': '✓ Sertifikalı e-Kassa entegrasyonu', 'hero.b2': '✓ ERP\'den bağımsız çalışma', 'hero.b3': '✓ 7/24 canlı destek',
   'hero.mock.title': 'KBoss · Günlük Özet', 'hero.mock.item1': 'Ciro (tüm şubeler)', 'hero.mock.item2': 'Onay bekleyen süreçler',
   'hero.mock.item3': 'SKT uyarısı', 'hero.mock.total': 'AI önerisi', 'hero.mock.ai': '3 sipariş hazır',
   'hero.mock.pay': '🎙 “KBoss, haftalık raporu hazırla”',
-  'strip.years': 'yıl perakende tecrübesi', 'strip.countries': 'ülkede kullanım',
-  'strip.support': 'canlı destek ekibi', 'strip.uptime': 'offline dayanıklı satış',
+  'strip.years': 'yılından beri sektör deneyimi', 'strip.countries': 'tamamlanmış proje',
+  'strip.support': 'canlı destek ekibi', 'strip.uptime': 'bağımsız ve entegre edilebilir',
   'why.title': 'Neden Kalem Platform?',
-  'why.lead': 'Kalem Yazılım\'ın 36\'dan fazla ülkede, 40 yılı aşkın perakende tecrübesinin ürünü — zincir marketlerin gerçek ihtiyaçlarından doğmuş platform.',
+  'why.lead': '1989’dan beri 2.000’den fazla projede şekillenen deneyim — perakende ekiplerinin gerçek ihtiyaçlarından doğmuş birleşik yönetim platformu.',
   'why1.t': 'ERP\'den bağımsız çalışma', 'why1.d': 'Perakende yönetiminiz ERP\'ye bağımlı kalmaz: platform tamamen bağımsız çalışır. İsterseniz SAP, LOGO, Mikro, 1C, jRetail, Venüt, Microsoft Dynamics 365 gibi önde gelen ERP\'lerle değişken veriler API üzerinden çift yönlü senkronize olur.',
   'why2.t': 'Donanımdan bağımsız çalışma', 'why2.d': 'Özel sunucu ve sistem desteği gerektirmez. Mevcut kasa bilgisayarları, Android cihazlar ve tarayıcı — bu kadar. Donanım yatırımı olmadan başlayın.',
   'why3.t': 'Uluslararası standartlarda şifreleme', 'why3.d': 'Tüm veriler uluslararası standartlarda şifrelenir; hassas bilgiler rol bazlı gizlenir. Her müşteri tamamen izole edilmiş ortamda tutulur.',
   'why4.t': 'Sertifikalı e-Kassa uygulaması', 'why4.d': 'Azerbaycan e-kassa entegrasyonu ile sertifikalı uygulama: satış, iade, X/Z raporları vergi gereksinimlerine tam uyumlu, otomatik fiskalizasyonla.',
   'why5.t': '7/24 destek', 'why5.d': 'Perakende gece gündüz çalışır, biz de öyle. 7/24 çalışan destek ekibimiz telefon, sohbet ve uzak bağlantıyla her an yanınızda.',
-  'why6.t': 'Kalem Yazılım güvencesi', 'why6.d': '36\'dan fazla ülkede, 40 yılı aşkın süredir perakende sektörüne hizmet veren Kalem Yazılım\'ın bilgi ve tecrübesi platformun her modülünde.',
+  'why6.t': 'Kalem Yazılım güvencesi', 'why6.d': '1989’dan beri 2.000’den fazla projede kazanılan saha deneyimi platformun her modülünde.',
   'mod.title': 'Modüller', 'mod.lead': 'Kasadan yönetim kuruluna — perakendenin her seviyesi için profesyonel modüller.',
   'm1.t': 'POS Satış', 'm1.d': 'Barkod öncelikli hızlı kasa: tartılı ürünler, indirimler, karma ödemeler, offline dayanıklılık ve banka terminalleriyle tam otomatik ödeme.',
   'm2.t': 'Back Office', 'm2.d': 'Ürün kataloğu, fiyat politikası, stok hareketleri, şube raporları ve rol bazlı kullanıcı yönetimi — tarayıcıdan.',
@@ -122,7 +122,7 @@ I18N.tr = {
   'c.name': 'Ad Soyad', 'c.company': 'Şirket / Mağaza', 'c.email': 'E-posta', 'c.phone': 'Telefon',
   'c.msg': 'Mesajınız', 'c.send': 'Gönder',
   'c.mailOpen': 'E-posta uygulamanız açılıyor…', 'c.ok': 'Başvurunuz alındı, teşekkürler!', 'c.err': 'Gönderilemedi, lütfen e-posta ile ulaşın:',
-  'footer.tag': '36\'dan fazla ülkede, 40 yılı aşkın perakende tecrübesi',
+  'footer.tag': '1989’dan beri · 2.000’den fazla proje deneyimi',
   'footer.rights': 'Tüm hakları saklıdır',
 };
 
@@ -130,24 +130,24 @@ I18N.en = {
   'top.line': '24/7 support line', 'top.loc': 'Baku · Istanbul',
   'nav.why': 'Why Kalem?', 'nav.modules': 'Modules', 'nav.integrations': 'Integrations',
   'nav.pricing': 'Pricing', 'nav.contact': 'Contact', 'nav.demo': 'Request demo',
-  'hero.eyebrow': '36+ countries · 40+ years of retail experience',
+  'hero.eyebrow': 'Since 1989 · 2,000+ successful projects',
   'hero.title': 'The platform that runs retail end to end',
-  'hero.lead': 'Kalem Platform is a retail management engine built on 40 years of industry experience, running fully independent of any ERP. Checkout to CRM, purchasing to production, approval workflows to AI-assisted management — every operation on one platform.',
+  'hero.lead': 'Kalem Platform is an ERP-independent retail management engine shaped by field experience since 1989. From checkout and CRM to purchasing, production and AI-assisted management, every operation runs on one platform.',
   'hero.cta1': 'Book a demo', 'hero.cta2': 'Explore modules',
   'hero.b1': '✓ Certified e-Kassa integration', 'hero.b2': '✓ ERP-independent operation', 'hero.b3': '✓ 24/7 live support',
   'hero.mock.title': 'KBoss · Daily Brief', 'hero.mock.item1': 'Revenue (all branches)', 'hero.mock.item2': 'Pending approvals',
   'hero.mock.item3': 'Expiry alerts', 'hero.mock.total': 'AI suggestion', 'hero.mock.ai': '3 orders ready',
   'hero.mock.pay': '🎙 “KBoss, prepare the weekly report”',
-  'strip.years': 'years in retail', 'strip.countries': 'countries served',
-  'strip.support': 'live support team', 'strip.uptime': 'offline-resilient sales',
+  'strip.years': 'industry experience since', 'strip.countries': 'completed projects',
+  'strip.support': 'live support team', 'strip.uptime': 'independent and integration-ready',
   'why.title': 'Why Kalem Platform?',
-  'why.lead': 'The product of Kalem Software\'s 40+ years of retail experience across 36+ countries — born from the real needs of market chains.',
+  'why.lead': 'Experience shaped through more than 2,000 projects since 1989 — one management platform born from the real needs of retail teams.',
   'why1.t': 'ERP-independent operation', 'why1.d': 'Your retail management never depends on an ERP: the platform runs fully standalone. When you want, variable data syncs bidirectionally via API with leading ERPs such as SAP, LOGO, Mikro, 1C, jRetail, Venüt and Microsoft Dynamics 365.',
   'why2.t': 'Hardware-independent operation', 'why2.d': 'No dedicated servers or system support required. Your existing register PCs, Android devices and a browser — that\'s it. Start without hardware investment.',
   'why3.t': 'Encryption to international standards', 'why3.d': 'All data is encrypted to international standards; sensitive information is masked by role. Every customer runs in a fully isolated environment.',
   'why4.t': 'Certified e-Kassa application', 'why4.d': 'Certified through the Azerbaijan e-kassa integration: sales, refunds, X/Z reports fully compliant with tax requirements, with automatic fiscalization.',
   'why5.t': '24/7 support', 'why5.d': 'Retail runs day and night — so do we. Our 24/7 support team is there by phone, chat and remote connection at any moment.',
-  'why6.t': 'Backed by Kalem Software', 'why6.d': 'The knowledge of Kalem Software — serving the retail industry for over 40 years in 36+ countries — is built into every module.',
+  'why6.t': 'Backed by Kalem Software', 'why6.d': 'Field knowledge gained through more than 2,000 projects since 1989 is built into every module.',
   'mod.title': 'Modules', 'mod.lead': 'From the register to the boardroom — professional modules for every level of retail.',
   'm1.t': 'POS', 'm1.d': 'Barcode-first fast checkout: weighed goods, discounts, split payments, offline resilience and fully automated card payments with bank terminals.',
   'm2.t': 'Back Office', 'm2.d': 'Product catalog, pricing policy, stock movements, branch reporting and role-based user management — from the browser.',
@@ -236,9 +236,42 @@ I18N.en = {
   'c.name': 'Full name', 'c.company': 'Company / Store', 'c.email': 'Email', 'c.phone': 'Phone',
   'c.msg': 'Your message', 'c.send': 'Send',
   'c.mailOpen': 'Opening your email client…', 'c.ok': 'Thanks — we received your request!', 'c.err': 'Could not send; please email us:',
-  'footer.tag': '40+ years of retail experience across 36+ countries',
+  'footer.tag': 'Since 1989 · Experience from 2,000+ projects',
   'footer.rights': 'All rights reserved',
 };
+
+/* Kurumsal güven yenilemesi: doğrulanmış metrikler ve çözüm aileleri. */
+Object.assign(I18N.az, {
+  'hero.eyebrow': '1989-dan bəri · 2.000+ uğurlu layihə',
+  'hero.lead': 'Kalem Platform — 1989-dan bəri sahədə qazanılan təcrübə ilə hazırlanmış, ERP-dən asılı olmadan işləyən pərakəndə idarəetmə mühərrikidir. Kassadan CRM-ə, satınalmadan istehsala və süni intellekt dəstəkli idarəetməyə qədər bütün əməliyyatlarınız tək platformada.',
+  'strip.years': 'ildən bəri sektor təcrübəsi',
+  'strip.countries': 'tamamlanmış layihə',
+  'strip.uptime': 'müstəqil və inteqrasiya edilə bilən',
+  'why.lead': '1989-dan bəri 2.000-dən çox layihədə formalaşan təcrübə — pərakəndə komandalarının real ehtiyaclarından doğulmuş vahid idarəetmə platforması.',
+  'why6.d': '1989-dan bəri 2.000-dən çox layihədə qazanılan sahə təcrübəsi platformanın hər modulunda.',
+  'group.sales': 'Satış və mağaza',
+  'group.customer': 'Müştəri və gəlir',
+  'group.supply': 'Təchizat və istehsal',
+  'group.operations': 'Əməliyyat və proses',
+  'group.intelligence': 'Analitika və süni intellekt',
+  'footer.tag': '1989-dan bəri · 2.000-dən çox layihə təcrübəsi',
+});
+
+Object.assign(I18N.tr, {
+  'group.sales': 'Satış ve mağaza',
+  'group.customer': 'Müşteri ve gelir',
+  'group.supply': 'Tedarik ve üretim',
+  'group.operations': 'Operasyon ve süreç',
+  'group.intelligence': 'Analitik ve yapay zekâ',
+});
+
+Object.assign(I18N.en, {
+  'group.sales': 'Sales and stores',
+  'group.customer': 'Customer and revenue',
+  'group.supply': 'Supply and production',
+  'group.operations': 'Operations and workflow',
+  'group.intelligence': 'Analytics and AI',
+});
 
 I18N.az['c.mailOpen'] = 'E-poçt tətbiqiniz açılır…';
 I18N.az['c.ok'] = 'Müraciətiniz qəbul edildi, təşəkkürlər!';
@@ -267,10 +300,18 @@ setLang(localStorage.getItem('kalem_lang') || 'az');
 
 /* Mobil menü */
 const burger = document.querySelector('.nav-burger');
-burger?.addEventListener('click', () => document.querySelector('.nav-links')?.classList.toggle('open'));
+const navLinks = document.querySelector('.nav-links');
+function setMenu(open) {
+  navLinks?.classList.toggle('open', open);
+  burger?.setAttribute('aria-expanded', String(open));
+}
+burger?.addEventListener('click', () => setMenu(!navLinks?.classList.contains('open')));
 document.querySelectorAll('.nav-links a').forEach((a) =>
-  a.addEventListener('click', () => document.querySelector('.nav-links')?.classList.remove('open')),
+  a.addEventListener('click', () => setMenu(false)),
 );
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') setMenu(false);
+});
 
 /* Fiyat hesaplayıcı */
 const P = CONFIG.prices;
