@@ -12,6 +12,8 @@ export interface MailAttachment {
   filename: string;
   content: Buffer;
   contentType?: string;
+  cid?: string;
+  contentDisposition?: 'attachment' | 'inline';
 }
 
 export interface MailSettingsView {
@@ -109,6 +111,7 @@ export class MailService implements OnModuleInit {
     subject: string,
     text: string,
     attachments: MailAttachment[] = [],
+    html?: string,
   ): Promise<boolean> {
     if (!this.enabled) return false;
     try {
@@ -118,6 +121,7 @@ export class MailService implements OnModuleInit {
         to,
         subject,
         text,
+        html,
         attachments,
       });
       this.logger.log(`E-posta gönderildi: ${to} — ${subject}`);

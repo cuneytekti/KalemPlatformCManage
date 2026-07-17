@@ -1,6 +1,7 @@
 import { QuotesService } from './quotes.service';
 import { BadRequestException } from '@nestjs/common';
-import { QuoteDiscountType } from '../entities/quote.entity';
+import { Quote, QuoteDiscountType, QuoteStatus } from '../entities/quote.entity';
+import { QuoteActivityType } from '../entities/quote-activity.entity';
 
 describe('QuotesService.computeMonthlyTotal', () => {
   const base = {
@@ -94,5 +95,71 @@ describe('QuotesService.computeFinancials', () => {
       discountType: QuoteDiscountType.PERCENT,
       discountValue: '100.01',
     })).toThrow(BadRequestException);
+  });
+});
+
+describe('QuotesService teklif gönderimi ve süreç kaydı', () => {
+  const quote = () => ({
+    id: '91a48ea2-a406-4e73-a346-7fc976bb0ee7', quoteNumber: 'KL-2026-12345678',
+    customerName: 'Ema Agro', contactName: 'Ahmet Bey', contactEmail: 'ahmet@example.com',
+    status: QuoteStatus.DRAFT,
+  } as Quote);
+
+  function setup(mailResult: boolean) {
+    const currentQuote = quote();
+    const quoteRepository = { findOneBy: jest.fn().mockResolvedValue(currentQuote) };
+    const activityRepository = { find: jest.fn() };
+    const transactionQuoteRepository = { save: jest.fn(async (value) => value) };
+    const transactionActivityRepository = {
+      create: jest.fn((value) => value), save: jest.fn(async (value) => value),
+    };
+    const dataSource = {
+      transaction: jest.fn(async (callback) => callback({
+        getRepository: (entity: unknown) => entity === Quote ? transactionQuoteRepository : transactionActivityRepository,
+      })),
+    };
+    const mail = { enabled: true, send: jest.fn().mockResolvedValue(mailResult) };
+    const pdf = { renderPdf: jest.fn().mockResolvedValue(Buffer.from('pdf')) };
+    const email = { build: jest.fn().mockReturnValue({
+      subject: 'Konu', text: 'Metin', html: '<p>Metin</p>', attachmentFilename: 'teklif.pdf',
+      logo: Buffer.from('logo'), logoCid: 'kalem-logo@cmanage',
+    }) };
+    const service = new QuotesService(
+      quoteRepository as never, activityRepository as never, {} as never, dataSource as never,
+      {} as never, mail as never, pdf as never, email as never,
+    );
+    return { service, currentQuote, dataSource, mail, transactionQuoteRepository, transactionActivityRepository };
+  }
+
+  it('başarılı SMTP gönderiminden sonra statü, dil, tarih ve hareketi birlikte kaydeder', async () => {
+    const test = setup(true);
+    const result = await test.service.sendByEmail(test.currentQuote.id, 'tr', 'admin@kalem.az');
+    expect(result.status).toBe(QuoteStatus.SENT);
+    expect(result.sentLanguage).toBe('tr');
+    expect(result.sentAt).toBeInstanceOf(Date);
+    expect(test.mail.send).toHaveBeenCalledWith(
+      'ahmet@example.com', 'Konu', 'Metin', expect.arrayContaining([
+        expect.objectContaining({ filename: 'teklif.pdf', contentType: 'application/pdf' }),
+        expect.objectContaining({ cid: 'kalem-logo@cmanage', contentDisposition: 'inline' }),
+      ]), '<p>Metin</p>',
+    );
+    expect(test.transactionActivityRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+      type: QuoteActivityType.EMAIL_SENT, status: QuoteStatus.SENT, createdByEmail: 'admin@kalem.az',
+    }));
+  });
+
+  it('SMTP başarısızsa teklif durumunu ve süreç geçmişini değiştirmez', async () => {
+    const test = setup(false);
+    await expect(test.service.sendByEmail(test.currentQuote.id, 'az')).rejects.toThrow(BadRequestException);
+    expect(test.currentQuote.status).toBe(QuoteStatus.DRAFT);
+    expect(test.dataSource.transaction).not.toHaveBeenCalled();
+  });
+
+  it('manuel süreç kaydında notu zorunlu tutar', async () => {
+    const test = setup(true);
+    await expect(test.service.addActivity(test.currentQuote.id, {
+      type: QuoteActivityType.PHONE_CALL, note: ' ',
+    })).rejects.toThrow(BadRequestException);
+    expect(test.dataSource.transaction).not.toHaveBeenCalled();
   });
 });

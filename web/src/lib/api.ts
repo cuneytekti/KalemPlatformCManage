@@ -143,9 +143,27 @@ export interface Quote {
   projectDurationText: string;
   paymentTermsText: string;
   currency: string;
-  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED';
+  status: QuoteStatus;
+  sentLanguage?: QuoteLanguage;
+  sentAt?: string;
   tenantId?: string;
   notes?: string;
+  lastActivity?: QuoteActivity;
+  createdAt: string;
+}
+
+export type QuoteLanguage = 'az' | 'tr' | 'en';
+export type QuoteStatus = 'DRAFT' | 'SENT' | 'FOLLOW_UP' | 'MEETING' | 'NEGOTIATION' | 'ACCEPTED' | 'REJECTED';
+export type QuoteActivityType = 'EMAIL_SENT' | 'PHONE_CALL' | 'VISIT' | 'MEETING' | 'NOTE' | 'STATUS_CHANGE';
+
+export interface QuoteActivity {
+  id: string;
+  quoteId: string;
+  type: QuoteActivityType;
+  status?: QuoteStatus;
+  note: string;
+  activityAt: string;
+  createdByEmail?: string;
   createdAt: string;
 }
 
@@ -283,12 +301,15 @@ export const api = {
     list: () => request<Quote[]>('/quotes'),
     create: (data: Partial<Quote>) =>
       request<Quote>('/quotes', { method: 'POST', body: JSON.stringify(data) }),
-    setStatus: (id: string, status: Quote['status']) =>
-      request<Quote>(`/quotes/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-    pdfUrl: (id: string, lang: 'az' | 'tr' | 'en') =>
+    setStatus: (id: string, status: QuoteStatus, note: string) =>
+      request<Quote>(`/quotes/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, note }) }),
+    pdfUrl: (id: string, lang: QuoteLanguage) =>
       `/api/quotes/${id}/pdf?lang=${lang}&token=${encodeURIComponent(auth.getToken() ?? '')}`,
-    send: (id: string, lang: 'az' | 'tr' | 'en' = 'az') =>
+    send: (id: string, lang: QuoteLanguage = 'az') =>
       request<Quote>(`/quotes/${id}/send`, { method: 'POST', body: JSON.stringify({ lang }) }),
+    activities: (id: string) => request<QuoteActivity[]>(`/quotes/${id}/activities`),
+    addActivity: (id: string, data: { type: QuoteActivityType; status?: QuoteStatus; note: string; activityAt?: string }) =>
+      request<QuoteActivity>(`/quotes/${id}/activities`, { method: 'POST', body: JSON.stringify(data) }),
     convertToTenant: (id: string, slug: string) =>
       request<Tenant>(`/quotes/${id}/convert-to-tenant`, { method: 'POST', body: JSON.stringify({ slug }) }),
   },

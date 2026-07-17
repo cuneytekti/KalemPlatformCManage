@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { BadgePercent, Building2, CalendarClock, FileText, PackageOpen, X } from 'lucide-react';
+import { BadgePercent, Building2, CalendarClock, FileText, ListChecks, Mail, PackageOpen, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { EmptyState, PageHeader, Spinner } from '../components/ui';
+import { QuoteEmailModal, QuoteProcessModal, STATUS_LABELS } from '../components/QuoteWorkflowModals';
 import { api, ClientInfo, Lead, Quote } from '../lib/api';
 
 const DEFAULT_PROJECT_DURATION =
@@ -75,6 +76,8 @@ export function QuotesPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [convertId, setConvertId] = useState<string | null>(null);
+  const [emailQuote, setEmailQuote] = useState<Quote | null>(null);
+  const [processQuote, setProcessQuote] = useState<Quote | null>(null);
   const [slug, setSlug] = useState('');
   const [qty, setQty] = useState({ seats: 5, pos: 1, mobile: 0 });
   const [unit, setUnit] = useState({ user: '', pos: '', mobile: '0' });
@@ -150,11 +153,6 @@ export function QuotesPage() {
     } finally { setBusy(false); }
   }
 
-  async function sendEmail(quote: Quote) {
-    try { await api.quotes.send(quote.id, 'az'); toast.success(`Teklif e-postayla gönderildi: ${quote.customerName}`); reload(); }
-    catch (err) { toast.error(err instanceof Error ? err.message : String(err)); }
-  }
-
   async function convertToTenant(quote: Quote) {
     if (!/^[a-z][a-z0-9-]{2,30}$/.test(slug)) { toast.error('Geçerli bir subdomain girin (küçük harf, 3-31 karakter)'); return; }
     try { const tenant = await api.quotes.convertToTenant(quote.id, slug); toast.success(`${quote.customerName} → ${slug}.kalemplatform.com kurulumu başladı`); setConvertId(null); setSlug(''); navigate(`/tenants/${tenant.id}`); }
@@ -172,8 +170,8 @@ export function QuotesPage() {
     </section>
 
     <div className="section-heading quote-list-heading"><div><h3>Hazırlanan teklifler</h3><p>PDF, gönderim ve müşteri dönüşüm işlemleri.</p></div></div>
-    {loading ? <Spinner /> : quotes.length === 0 ? <EmptyState message="Henüz hazırlanmış teklif yok." /> : <div className="table-wrap quote-table"><table><thead><tr><th>Teklif</th><th>Müşteri</th><th>Kullanıcı</th><th>Kasa</th><th>Aylık</th><th>İlk Yıl</th><th>Durum</th><th></th></tr></thead><tbody>
-      {quotes.map((quote) => <tr key={quote.id}><td><strong>{quote.quoteNumber}</strong><small>{new Date(quote.createdAt).toLocaleDateString('tr-TR')}</small></td><td>{quote.customerName}{quote.contactName && <small>{quote.contactName}</small>}</td><td>{quote.seats} × {quote.pricePerUser}</td><td>{quote.posTerminals} × {quote.pricePerPosTerminal}</td><td><strong>{quote.monthlyTotal} {quote.currency}</strong></td><td><strong>{quote.firstYearTotal} {quote.currency}</strong></td><td><span className={`badge ${quote.status}`}>{quote.status}</span></td><td><div className="action-cell">{(['az', 'tr', 'en'] as const).map((lang) => <a key={lang} href={api.quotes.pdfUrl(quote.id, lang)}>{lang.toUpperCase()}</a>)}{(quote.status === 'DRAFT' || quote.status === 'SENT') && <button className="ghost" onClick={() => void sendEmail(quote)}>E-posta Gönder</button>}{!quote.tenantId && quote.status !== 'REJECTED' && convertId !== quote.id && <button onClick={() => { setConvertId(quote.id); setSlug(''); }}>Müşteriye Dönüştür</button>}{quote.tenantId && <span className="badge ACTIVE">Müşteri ✓</span>}</div>{convertId === quote.id && <div className="action-cell inline-convert"><input placeholder="subdomain (örn: musteri1)" value={slug} onChange={(event) => setSlug(event.target.value.toLowerCase())} pattern="[a-z][a-z0-9-]{2,30}" autoFocus /><button onClick={() => void convertToTenant(quote)}>Kur</button><button className="ghost" onClick={() => setConvertId(null)}>Vazgeç</button></div>}</td></tr>)}
+    {loading ? <Spinner /> : quotes.length === 0 ? <EmptyState message="Henüz hazırlanmış teklif yok." /> : <div className="table-wrap quote-table"><table><thead><tr><th>Teklif</th><th>Müşteri</th><th>Aylık / İlk Yıl</th><th>Durum</th><th>Son İşlem</th><th>İşlemler</th></tr></thead><tbody>
+      {quotes.map((quote) => <tr key={quote.id}><td><strong>{quote.quoteNumber}</strong><small>{new Date(quote.createdAt).toLocaleDateString('tr-TR')} · {quote.seats} kullanıcı · {quote.posTerminals} kasa</small></td><td><strong>{quote.customerName}</strong>{quote.contactName && <small>{quote.contactName}</small>}{quote.contactEmail && <small>{quote.contactEmail}</small>}</td><td><strong>{quote.monthlyTotal} {quote.currency} / ay</strong><small>{quote.firstYearTotal} {quote.currency} ilk yıl</small></td><td><span className={`badge ${quote.status}`}>{STATUS_LABELS[quote.status]}</span>{quote.sentAt && <small>{new Date(quote.sentAt).toLocaleString('tr-TR')} · {quote.sentLanguage?.toUpperCase()}</small>}</td><td className="quote-last-activity">{quote.lastActivity ? <><strong>{quote.lastActivity.note}</strong><small>{new Date(quote.lastActivity.activityAt).toLocaleString('tr-TR')}</small></> : <span>Henüz süreç kaydı yok</span>}</td><td><div className="action-cell"><div className="pdf-actions">{(['az', 'tr', 'en'] as const).map((lang) => <a key={lang} href={api.quotes.pdfUrl(quote.id, lang)}>{lang.toUpperCase()} PDF</a>)}</div>{quote.status !== 'ACCEPTED' && quote.status !== 'REJECTED' && <button className="ghost" onClick={() => setEmailQuote(quote)}><Mail size={14} /> E-posta Gönder</button>}<button className="ghost" onClick={() => setProcessQuote(quote)}><ListChecks size={14} /> Süreci Yönet</button>{!quote.tenantId && quote.status !== 'REJECTED' && convertId !== quote.id && <button onClick={() => { setConvertId(quote.id); setSlug(''); }}>Müşteriye Dönüştür</button>}{quote.tenantId && <span className="badge ACTIVE">Müşteri ✓</span>}</div>{convertId === quote.id && <div className="action-cell inline-convert"><input placeholder="subdomain (örn: musteri1)" value={slug} onChange={(event) => setSlug(event.target.value.toLowerCase())} pattern="[a-z][a-z0-9-]{2,30}" autoFocus /><button onClick={() => void convertToTenant(quote)}>Kur</button><button className="ghost" onClick={() => setConvertId(null)}>Vazgeç</button></div>}</td></tr>)}
     </tbody></table></div>}
 
     {selected && <div className="form-modal-backdrop" onMouseDown={() => !busy && setSelected(null)}><div className="form-modal proposal-modal" role="dialog" aria-modal="true" aria-labelledby="proposal-form-title" onMouseDown={(event) => event.stopPropagation()}>
@@ -186,5 +184,7 @@ export function QuotesPage() {
         {error && <p className="error">{error}</p>}
       </div></div><div className="form-modal-footer"><p><CalendarClock size={14} /> Oluşturulan teklif kaynak kayda otomatik bağlanır.</p><div className="button-row"><button className="ghost" type="button" onClick={() => setSelected(null)} disabled={busy}>Vazgeç</button><button type="submit" disabled={busy}><FileText size={15} /> {busy ? 'Hazırlanıyor…' : 'Teklifi Kaydet ve Hazırla'}</button></div></div></form>
     </div></div>}
+    {emailQuote && <QuoteEmailModal quote={emailQuote} onClose={() => setEmailQuote(null)} onSent={() => { setEmailQuote(null); reload(); }} />}
+    {processQuote && <QuoteProcessModal quote={processQuote} onClose={() => setProcessQuote(null)} onChanged={reload} />}
   </>;
 }

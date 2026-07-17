@@ -3,6 +3,9 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 export enum QuoteStatus {
   DRAFT = 'DRAFT',
   SENT = 'SENT',
+  FOLLOW_UP = 'FOLLOW_UP',
+  MEETING = 'MEETING',
+  NEGOTIATION = 'NEGOTIATION',
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
 }
@@ -78,6 +81,12 @@ export class Quote {
 
   @Column({ type: 'enum', enum: QuoteStatus, default: QuoteStatus.DRAFT })
   status: QuoteStatus;
+
+  @Column({ nullable: true })
+  sentLanguage?: 'az' | 'tr' | 'en';
+
+  @Column({ type: 'timestamp', nullable: true })
+  sentAt?: Date;
 
   /** Teklif tenant'a dönüştürüldüyse dolu (çifte dönüşüm koruması) */
   @Column({ nullable: true })

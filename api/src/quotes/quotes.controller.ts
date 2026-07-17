@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
-import type { Response } from 'express';
-import { IsEnum, IsIn, IsOptional, Matches } from 'class-validator';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req, Res } from '@nestjs/common';
+import type { Request, Response } from 'express';
+import { IsDateString, IsEnum, IsIn, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import type { JwtPayload } from '../auth/jwt-auth.guard';
+import { QuoteActivity, QuoteActivityType } from '../entities/quote-activity.entity';
 import { Tenant } from '../entities/tenant.entity';
 import { Quote, QuoteStatus } from '../entities/quote.entity';
 import { CreateQuoteDto } from './quote-input.dto';
@@ -12,6 +14,9 @@ export { CreateQuoteDto } from './quote-input.dto';
 class SetStatusDto {
   @IsEnum(QuoteStatus)
   status: QuoteStatus;
+
+  @IsString() @MinLength(2) @MaxLength(2000)
+  note: string;
 }
 
 class ConvertDto {
@@ -24,6 +29,20 @@ class ConvertDto {
 class SendDto {
   @IsOptional() @IsIn(['az', 'tr', 'en'])
   lang?: 'az' | 'tr' | 'en';
+}
+
+export class CreateQuoteActivityDto {
+  @IsEnum(QuoteActivityType)
+  type: QuoteActivityType;
+
+  @IsOptional() @IsEnum(QuoteStatus)
+  status?: QuoteStatus;
+
+  @IsString() @MinLength(2) @MaxLength(2000)
+  note: string;
+
+  @IsOptional() @IsDateString()
+  activityAt?: string;
 }
 
 @Controller('quotes')
@@ -61,19 +80,45 @@ export class QuotesController {
   }
 
   @Patch(':id/status')
-  setStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: SetStatusDto): Promise<Quote> {
-    return this.quotesService.setStatus(id, dto.status);
+  setStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetStatusDto,
+    @Req() req: Request & { user?: JwtPayload },
+  ): Promise<Quote> {
+    return this.quotesService.setStatus(id, dto.status, req.user?.email, dto.note);
+  }
+
+  @Get(':id/activities')
+  activities(@Param('id', ParseUUIDPipe) id: string): Promise<QuoteActivity[]> {
+    return this.quotesService.getActivities(id);
+  }
+
+  @Post(':id/activities')
+  addActivity(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateQuoteActivityDto,
+    @Req() req: Request & { user?: JwtPayload },
+  ): Promise<QuoteActivity> {
+    return this.quotesService.addActivity(id, dto, req.user?.email);
   }
 
   /** Teklif PDF'ini müşteriye e-postayla gönderir (SENT işaretler). */
   @Post(':id/send')
-  send(@Param('id', ParseUUIDPipe) id: string, @Body() dto: SendDto): Promise<Quote> {
-    return this.quotesService.sendByEmail(id, dto.lang ?? 'az');
+  send(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SendDto,
+    @Req() req: Request & { user?: JwtPayload },
+  ): Promise<Quote> {
+    return this.quotesService.sendByEmail(id, dto.lang ?? 'az', req.user?.email);
   }
 
   /** Teklifi tek tıkla tenant'a dönüştürür: kurulum + lisans + ACCEPTED. */
   @Post(':id/convert-to-tenant')
-  convert(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ConvertDto): Promise<Tenant> {
-    return this.quotesService.convertToTenant(id, dto.slug);
+  convert(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ConvertDto,
+    @Req() req: Request & { user?: JwtPayload },
+  ): Promise<Tenant> {
+    return this.quotesService.convertToTenant(id, dto.slug, req.user?.email);
   }
 }
