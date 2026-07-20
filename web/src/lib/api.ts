@@ -182,6 +182,42 @@ export interface MailSettings {
   updatedAt?: string;
 }
 
+export type LogoKalemSectionType = 'MAIN' | 'SERVICE' | 'MAINTENANCE' | 'LEM';
+export interface LogoKalemCatalogItem {
+  id: string; code: string; category: string; nameTr: string; nameAz?: string; nameEn?: string;
+  descriptionTr?: string; unit: string; billingPeriod: 'ONE_TIME' | 'MONTHLY' | 'ANNUAL';
+  defaultPrice: string; currency: string; active: boolean; sortOrder: number;
+}
+export interface LogoKalemLine {
+  id?: string; catalogItemId?: string; name: string; description?: string; location?: string; unit: string; currency?: string;
+  userCount?: string; quantity: string; unitPrice: string; discountType: 'NONE' | 'FIXED' | 'PERCENT';
+  discountValue: string; grossTotal?: string; discountTotal?: string; netTotal?: string; sortOrder?: number;
+}
+export interface LogoKalemSection {
+  id?: string; type: LogoKalemSectionType; title: string; currency: string; billingPeriod: 'ONE_TIME' | 'MONTHLY' | 'ANNUAL';
+  sortOrder?: number; subtotal?: string; discountTotal?: string; netTotal?: string; lines: LogoKalemLine[];
+}
+export interface LogoKalemAdjustment {
+  id?: string; target: Exclude<LogoKalemSectionType, 'SERVICE'>; type: 'TAX' | 'DISCOUNT' | 'OTHER';
+  label: string; method: 'PERCENT' | 'FIXED'; value: string; amount?: string; sortOrder?: number;
+}
+export interface LogoKalemQuoteInput {
+  customerName: string; contactName?: string; contactEmail?: string; contactPhone?: string; language: QuoteLanguage;
+  projectTitle: string; subject?: string; meetingDate?: string; quoteDate: string; senderName: string; senderPhone?: string; senderEmail?: string;
+  introduction?: string; projectScope?: string; projectTeam?: string; projectDuration?: string; paymentTerms?: string;
+  validityTerms?: string; deliveryTerms?: string; travelTerms?: string; notes?: string; includeReferences: boolean; includeCertificates: boolean;
+  sections: LogoKalemSection[]; adjustments: LogoKalemAdjustment[];
+}
+export interface LogoKalemRevision extends Omit<LogoKalemQuoteInput, 'customerName' | 'contactName' | 'contactEmail' | 'contactPhone' | 'sections' | 'adjustments'> {
+  id: string; quoteId: string; revisionNumber: number; mainTotal: string; maintenanceTotal: string; lemTotal: string; taxTotal: string;
+  lockedAt?: string; createdAt: string; updatedAt: string;
+}
+export interface LogoKalemQuote {
+  id: string; baseNumber: string; customerName: string; contactName?: string; contactEmail?: string; contactPhone?: string;
+  status: QuoteStatus; activeRevisionId?: string; sentAt?: string; activeRevision?: LogoKalemRevision; lastActivity?: QuoteActivity; createdAt: string;
+}
+export interface LogoKalemQuoteDetail { quote: LogoKalemQuote; revision: LogoKalemRevision; sections: LogoKalemSection[]; adjustments: LogoKalemAdjustment[]; }
+
 export interface LoginResult {
   accessToken: string;
   user: AuthUser;
@@ -312,6 +348,21 @@ export const api = {
       request<QuoteActivity>(`/quotes/${id}/activities`, { method: 'POST', body: JSON.stringify(data) }),
     convertToTenant: (id: string, slug: string) =>
       request<Tenant>(`/quotes/${id}/convert-to-tenant`, { method: 'POST', body: JSON.stringify({ slug }) }),
+  },
+  logoKalem: {
+    list: () => request<LogoKalemQuote[]>('/logo-kalem-quotes'),
+    get: (id: string, revisionId?: string) => request<LogoKalemQuoteDetail>(`/logo-kalem-quotes/${id}${revisionId ? `?revisionId=${revisionId}` : ''}`),
+    create: (data: LogoKalemQuoteInput) => request<LogoKalemQuoteDetail>('/logo-kalem-quotes', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: LogoKalemQuoteInput) => request<LogoKalemQuoteDetail>(`/logo-kalem-quotes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    newRevision: (id: string) => request<LogoKalemQuoteDetail>(`/logo-kalem-quotes/${id}/revisions`, { method: 'POST' }),
+    revisions: (id: string) => request<LogoKalemRevision[]>(`/logo-kalem-quotes/${id}/revisions`),
+    send: (id: string) => request<LogoKalemQuoteDetail>(`/logo-kalem-quotes/${id}/send`, { method: 'POST' }),
+    pdfUrl: (id: string, revisionId?: string) => `/api/logo-kalem-quotes/${id}/pdf?${revisionId ? `revisionId=${revisionId}&` : ''}token=${encodeURIComponent(auth.getToken() ?? '')}`,
+    activities: (id: string) => request<QuoteActivity[]>(`/logo-kalem-quotes/${id}/activities`),
+    addActivity: (id: string, data: { type: QuoteActivityType; status?: QuoteStatus; note: string; activityAt?: string }) => request<QuoteActivity>(`/logo-kalem-quotes/${id}/activities`, { method: 'POST', body: JSON.stringify(data) }),
+    catalog: () => request<LogoKalemCatalogItem[]>('/logo-kalem-catalog'),
+    createCatalog: (data: Omit<LogoKalemCatalogItem, 'id'>) => request<LogoKalemCatalogItem>('/logo-kalem-catalog', { method: 'POST', body: JSON.stringify(data) }),
+    updateCatalog: (id: string, data: Omit<LogoKalemCatalogItem, 'id'>) => request<LogoKalemCatalogItem>(`/logo-kalem-catalog/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   },
   settings: {
     getMail: () => request<MailSettings>('/settings/mail'),

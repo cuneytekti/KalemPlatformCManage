@@ -7,6 +7,7 @@ import {
   LogOut,
   ReceiptText,
   ScrollText,
+  Shapes,
   Settings,
   ShieldCheck,
   UserRoundCog,
@@ -22,6 +23,8 @@ import { LeadsPage } from './pages/Leads';
 import { LicensesPage } from './pages/Licenses';
 import { LoginPage } from './pages/Login';
 import { QuotesPage } from './pages/Quotes';
+import { LogoKalemQuoteEditorPage } from './pages/LogoKalemQuoteEditor';
+import { LogoKalemQuotesPage } from './pages/LogoKalemQuotes';
 import { SettingsPage } from './pages/Settings';
 import { TenantDetailPage } from './pages/TenantDetail';
 import { TenantsPage } from './pages/Tenants';
@@ -59,6 +62,7 @@ function Layout({ children }: { children: ReactNode }) {
           <NavLink to="/leads"><ClipboardList size={18} /><span>Başvurular</span></NavLink>
           <NavLink to="/client-info"><FileText size={18} /><span>Müşteri Bilgi Toplama</span></NavLink>
           <NavLink to="/quotes"><ScrollText size={18} /><span>Teklifler</span></NavLink>
+          <NavLink to="/logo-kalem-quotes"><Shapes size={18} /><span>Logo-Kalem Teklifler</span></NavLink>
           <NavLink to="/tenants"><Building2 size={18} /><span>Müşteriler</span></NavLink>
           <NavLink to="/licenses"><ShieldCheck size={18} /><span>Lisanslar</span></NavLink>
           <NavLink to="/invoices"><ReceiptText size={18} /><span>Faturalar</span></NavLink>
@@ -117,6 +121,9 @@ function AppRoutes() {
                 <Route path="/tenants/:id" element={<TenantDetailPage />} />
                 <Route path="/licenses" element={<LicensesPage />} />
                 <Route path="/quotes" element={<QuotesPage />} />
+                <Route path="/logo-kalem-quotes" element={<LogoKalemQuotesPage />} />
+                <Route path="/logo-kalem-quotes/new" element={<LogoKalemQuoteEditorPage />} />
+                <Route path="/logo-kalem-quotes/:id/edit" element={<LogoKalemQuoteEditorPage />} />
                 <Route path="/invoices" element={<InvoicesPage />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/settings" element={<SettingsPage />} />

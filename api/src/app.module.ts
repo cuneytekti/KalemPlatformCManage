@@ -13,6 +13,7 @@ import configuration from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { LeadsModule } from './leads/leads.module';
+import { LogoKalemModule } from './logo-kalem/logo-kalem.module';
 import { MailModule } from './mail/mail.module';
 import { LicensesModule } from './licenses/licenses.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -68,6 +69,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     UsageModule,
     InvoicesModule,
     LeadsModule,
+    LogoKalemModule,
     ClientInfoModule,
     TenantsModule,
     PaymentsModule,
