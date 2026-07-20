@@ -398,13 +398,13 @@ button.danger:hover:not(:disabled) { background: #ffe3e7; }
 @keyframes modal-in { from { opacity: 0; transform: translateY(12px) scale(.985); } }
 
 .form-modal { width: min(1080px, 100%); max-height: calc(100vh - 2.5rem); display: flex; flex-direction: column; padding: 0; overflow: hidden; }
-.form-modal > form { display: flex; flex: 1; flex-direction: column; min-height: 0; }
-.form-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.6rem; border-bottom: 1px solid var(--slate-200); }
+.form-modal > form { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
+.form-modal-header { display: flex; flex: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.6rem; border-bottom: 1px solid var(--slate-200); }
 .form-modal-header h3 { margin-bottom: .25rem; font-size: 1.15rem; }
 .form-modal-header p { margin: 0; color: var(--slate-500); font-size: .8rem; }
 .modal-close { min-width: 38px; width: 38px; padding: 0; color: var(--slate-500); border-color: var(--slate-200); background: var(--slate-50); box-shadow: none; }
-.form-modal-body { flex: 1; min-height: 0; padding: 1.5rem 1.6rem; overflow-y: auto; overscroll-behavior: contain; background: #fbfdfd; }
-.form-modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.6rem; border-top: 1px solid var(--slate-200); background: var(--white); }
+.form-modal-body { flex: 1 1 auto; min-height: 0; padding: 1.5rem 1.6rem; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: #fbfdfd; }
+.form-modal-footer { display: flex; flex: 0 0 auto; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.6rem; border-top: 1px solid var(--slate-200); background: var(--white); }
 .form-modal-footer p { display: flex; align-items: center; gap: .4rem; margin: 0; color: var(--slate-500); font-size: .74rem; }
 .email-send-modal { width: min(900px, 100%); }
 .email-modal-body { display: grid; gap: 1.1rem; }
@@ -649,12 +649,13 @@ button.danger:hover:not(:disabled) { background: #ffe3e7; }
   .login-shell { grid-template-columns: 1fr; }
   .login-brand { display: none; }
   .login-card { padding: 2rem 1.4rem; }
-  .form-modal-backdrop { padding: 0; align-items: stretch; }
-  .form-modal { max-height: 100vh; min-height: 100vh; border-radius: 0; }
+  .form-modal-backdrop { height: 100vh; height: 100dvh; padding: 0; align-items: stretch; overflow: hidden; }
+  .form-modal { height: 100vh; min-height: 100vh; max-height: 100vh; height: 100dvh; min-height: 100dvh; max-height: 100dvh; border-radius: 0; }
+  .form-modal > form { height: 100%; }
   .form-modal-header, .form-modal-body, .form-modal-footer { padding-left: 1rem; padding-right: 1rem; }
   .form-grid { grid-template-columns: 1fr; }
   .field, .field.half, .field.wide, .field.full, .segmented-field { grid-column: 1; }
-  .form-modal-footer { align-items: stretch; flex-direction: column; }
+  .form-modal-footer { align-items: stretch; flex-direction: column; padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
   .form-modal-footer .button-row { display: grid; grid-template-columns: 1fr 1fr; }
   .email-send-controls { grid-template-columns: 1fr; }
   .email-preview > header, .email-preview-content { padding: 1.35rem; }
