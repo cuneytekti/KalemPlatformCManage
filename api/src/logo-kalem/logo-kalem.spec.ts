@@ -5,6 +5,7 @@ import { QuoteStatus } from '../entities/quote.entity';
 import { SaveLogoKalemQuoteDto } from './logo-kalem.dto';
 import { LogoKalemPdfService } from './logo-kalem-pdf.service';
 import { LogoKalemService, LogoKalemDetail } from './logo-kalem.service';
+import { FixLogoKalemObjectCatalogName1784650600000 } from '../migrations/1784650600000-FixLogoKalemObjectCatalogName';
 
 const detail = (language: 'tr' | 'az' | 'en' = 'tr', attachments = true): LogoKalemDetail => ({
   quote: { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', baseNumber: 'LK-2026-AAAAAAAA', customerName: '<Ema & Agro>', contactName: 'Aydın', contactEmail: 'a@example.com', status: QuoteStatus.DRAFT } as never,
@@ -35,6 +36,66 @@ describe('LogoKalemPdfService', () => {
 
   it('referans ve sertifika seçilmezse üç ek sayfayı kaldırır', () => {
     expect(pages(service.html(detail('tr', false)))).toBe(8);
+  });
+
+  it('satır indirim oranlarını ve bölümün dört kalemli özetini gösterir', () => {
+    const offer = detail('tr', false);
+    offer.sections[0].subtotal = '180.45';
+    offer.sections[0].discountTotal = '10.30';
+    offer.sections[0].netTotal = '170.15';
+    offer.sections[0].lines = [
+      { name: 'Yüzdeli', unit: 'Adet', currency: 'USD', quantity: '3', unitPrice: '10.15', discountType: 'PERCENT', discountValue: '10', grossTotal: '30.45', discountTotal: '3.05', netTotal: '27.40' } as never,
+      { name: 'Sabit', unit: 'Adet', currency: 'USD', quantity: '2', unitPrice: '25', discountType: 'FIXED', discountValue: '7.25', grossTotal: '50.00', discountTotal: '7.25', netTotal: '42.75' } as never,
+      { name: 'İndirimsiz', unit: 'Adet', currency: 'USD', quantity: '1', unitPrice: '100', discountType: 'NONE', discountValue: '0', grossTotal: '100.00', discountTotal: '0.00', netTotal: '100.00' } as never,
+    ];
+
+    const html = service.html(offer);
+    expect(html).toContain('%10,00');
+    expect(html).toContain('%14,50');
+    expect(html).toContain('%0,00');
+    expect(html).toContain('Toplam Liste Fiyatı');
+    expect(html).toContain('180,45 USD');
+    expect(html).toContain('%5,71');
+    expect(html).toContain('10,30 USD');
+    expect(html).toContain('170,15 USD');
+  });
+
+  it.each([
+    ['tr', 'Toplam Liste Fiyatı', '%10,00'],
+    ['az', 'Ümumi Siyahı Qiyməti', '10,00%'],
+    ['en', 'Total List Price', '10.00%'],
+  ] as const)('%s bölüm özetini ve oranları dile uygun biçimler', (language, label, rate) => {
+    const offer = detail(language, false);
+    offer.sections[0].subtotal = '100.00';
+    offer.sections[0].discountTotal = '10.00';
+    offer.sections[0].netTotal = '90.00';
+    offer.sections[0].lines[0].discountType = 'PERCENT';
+    offer.sections[0].lines[0].discountValue = '10';
+    offer.sections[0].lines[0].discountTotal = '10.00';
+    offer.sections[0].lines[0].netTotal = '90.00';
+    const html = service.html(offer);
+    expect(html).toContain(label);
+    expect(html).toContain(rate);
+  });
+
+  it('çok sayfalı fiyat bölümünde özeti yalnız son grid sayfasına ekler', () => {
+    const offer = detail('tr', false);
+    offer.sections[0].lines = Array.from({ length: 10 }, (_, index) => ({ ...offer.sections[0].lines[0], name: `Ürün ${index + 1}` } as never));
+    const html = service.html(offer);
+    expect((html.match(/class="section-summary"/g) ?? [])).toHaveLength(1);
+    expect(html.indexOf('Ürün 10')).toBeLessThan(html.indexOf('class="section-summary"'));
+  });
+});
+
+describe('FixLogoKalemObjectCatalogName migration', () => {
+  it('yalnız bilinen hatalı ad ve açıklama birleşimini koşullu düzeltir', async () => {
+    const query = jest.fn().mockResolvedValue(undefined);
+    await new FixLogoKalemObjectCatalogName1784650600000().up({ query } as never);
+    const sql = query.mock.calls[0][0] as string;
+    expect(sql).toContain(`"code" = 'LOGO-T3-OBJE2'`);
+    expect(sql).toContain(`"nameTr" = 'Logo Tiger 3 Object Ana Paket'`);
+    expect(sql).toContain(`BTRIM(COALESCE("descriptionTr", '')) = 'Obje 2kullanıcı arttırımı'`);
+    expect(sql).toContain(`SET "nameTr" = 'Obje 2 Kullanıcı Artırımı'`);
   });
 });
 

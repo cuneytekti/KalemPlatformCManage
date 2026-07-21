@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Building2,
+  CalendarClock,
   CheckCircle2,
   CircleDollarSign,
   ClipboardList,
@@ -11,6 +12,7 @@ import {
   FileText,
   Gauge,
   ServerCog,
+  Tag,
   TrendingUp,
   UsersRound,
 } from 'lucide-react';
@@ -32,6 +34,11 @@ const STATUS_TR: Record<string, string> = {
   DRAFT: 'Taslak', SENT: 'Gönderildi', ACCEPTED: 'Kabul edildi', REJECTED: 'Reddedildi',
   ACTIVE: 'Aktif', PENDING: 'Bekliyor', PROVISIONING: 'Kuruluyor', FAILED: 'Hatalı',
 };
+
+const APP_UPDATED_AT = new Intl.DateTimeFormat('tr-TR', {
+  dateStyle: 'long',
+  timeStyle: 'short',
+}).format(new Date(__APP_UPDATED_AT__));
 
 type ActivityRow = {
   id: string;
@@ -142,6 +149,10 @@ export function DashboardPage() {
         description="Başvurudan müşteri dönüşümüne kadar satış hattını, teklif değerini ve operasyon sağlığını tek ekrandan analiz edin."
         actions={<Link className="dashboard-primary-link" to="/quotes">Teklifleri Yönet <ArrowRight size={16} /></Link>}
       />
+      <section className="dashboard-release" aria-label="Uygulama sürüm bilgisi">
+        <div><Tag size={16} /><span>Versiyon</span><strong>v{__APP_VERSION__}</strong></div>
+        <div><CalendarClock size={16} /><span>Son güncelleme</span><strong>{APP_UPDATED_AT}</strong></div>
+      </section>
       {loading ? <Spinner /> : <>
         <section className="dashboard-kpi-grid" aria-label="Temel performans göstergeleri">
           <article className="dashboard-kpi critical">
