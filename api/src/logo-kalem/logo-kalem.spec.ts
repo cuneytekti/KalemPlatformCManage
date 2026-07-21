@@ -122,10 +122,10 @@ describe('LogoKalemPdfService', () => {
   });
 
   it.each([
-    ['tr', 'Lisans Bedelleri', 'Hizmet Bedelleri', 'KDV Dâhil Toplam', 'Teklif Genel Toplamı', '151,20 USD'],
-    ['az', 'Lisenziya Məbləğləri', 'Xidmət Məbləğləri', 'ƏDV Daxil Cəm', 'Təklifin Ümumi Məbləği', '151,20 USD'],
-    ['en', 'Licence Fees', 'Service Fees', 'Total incl. VAT', 'Proposal Total', '151.20 USD'],
-  ] as const)('%s yatırım özetinde lisans ve hizmetleri ayırıp dönemsel bedelleri toplam dışında tutar', (language, licenseLabel, serviceLabel, totalLabel, proposalLabel, proposalTotal) => {
+    ['tr', 'Lisans Bedelleri', 'Hizmet Bedelleri', 'KDV Dâhil Toplam', 'Teklif Genel Toplamı', 'KDV Hariç Toplam', 'KDV Dâhil Toplam', '126,00 USD', '151,20 USD'],
+    ['az', 'Lisenziya Məbləğləri', 'Xidmət Məbləğləri', 'ƏDV Daxil Cəm', 'Təklifin Ümumi Məbləği', 'ƏDV-siz Ümumi Məbləğ', 'ƏDV Daxil Ümumi Məbləğ', '126,00 USD', '151,20 USD'],
+    ['en', 'Licence Fees', 'Service Fees', 'Total incl. VAT', 'Proposal Total', 'Total Excl. VAT', 'Total Incl. VAT', '126.00 USD', '151.20 USD'],
+  ] as const)('%s yatırım özetinde lisans ve hizmetleri ayırıp dönemsel bedelleri toplam dışında tutar', (language, licenseLabel, serviceLabel, totalLabel, proposalLabel, exclVatLabel, inclVatLabel, proposalNet, proposalTotal) => {
     const offer = detail(language, false);
     Object.assign(offer.sections[0], { subtotal: '100.00', discountTotal: '10.00', netTotal: '90.00' });
     Object.assign(offer.sections[1], { subtotal: '50.00', discountTotal: '0.00', netTotal: '50.00', lines: [{ name: 'Kurulum', unit: 'Hizmet', currency: 'USD', quantity: '1', unitPrice: '50.00', discountType: 'NONE', discountValue: '0', grossTotal: '50.00', discountTotal: '0.00', netTotal: '50.00' }] });
@@ -140,6 +140,9 @@ describe('LogoKalemPdfService', () => {
     expect(html).toContain(serviceLabel);
     expect(html).toContain(totalLabel);
     expect(html).toContain(proposalLabel);
+    expect(html).toContain(exclVatLabel);
+    expect(html).toContain(inclVatLabel);
+    expect(html).toContain(proposalNet);
     expect(html).toContain(proposalTotal);
     expect(html).not.toContain('LEM vergisi');
     expect(html).toContain(language === 'en' ? 'Monthly service and annual LEM fees are not included in the proposal total.' : language === 'az' ? 'Aylıq xidmət və illik LEM məbləğləri təklifin ümumi məbləğinə daxil deyil.' : 'Aylık hizmet ve yıllık LEM bedelleri teklif genel toplamına dahil değildir.');
