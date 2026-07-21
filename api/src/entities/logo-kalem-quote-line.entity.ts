@@ -14,6 +14,9 @@ export class LogoKalemQuoteLine {
   @Column({ type: 'numeric', precision: 12, scale: 2, nullable: true }) userCount?: string;
   @Column({ type: 'numeric', precision: 12, scale: 2, default: 1 }) quantity: string;
   @Column({ type: 'numeric', precision: 14, scale: 2, default: 0 }) unitPrice: string;
+  @Column({ default: 'STANDARD' }) pricingMode: 'STANDARD' | 'LICENSE_PERCENT';
+  @Column({ type: 'numeric', precision: 5, scale: 2, nullable: true }) ratePercent?: string;
+  @Column({ type: 'numeric', precision: 14, scale: 2, default: 0 }) calculationBase: string;
   @Column({ default: 'NONE' }) discountType: 'NONE' | 'FIXED' | 'PERCENT';
   @Column({ type: 'numeric', precision: 14, scale: 2, default: 0 }) discountValue: string;
   @Column({ type: 'numeric', precision: 14, scale: 2, default: 0 }) grossTotal: string;

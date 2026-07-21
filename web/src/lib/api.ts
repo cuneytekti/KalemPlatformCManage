@@ -191,7 +191,8 @@ export interface LogoKalemCatalogItem {
 export interface LogoKalemLine {
   id?: string; catalogItemId?: string; name: string; description?: string; location?: string; unit: string; currency?: string;
   userCount?: string; quantity: string; unitPrice: string; discountType: 'NONE' | 'FIXED' | 'PERCENT';
-  discountValue: string; grossTotal?: string; discountTotal?: string; netTotal?: string; sortOrder?: number;
+  discountValue: string; pricingMode?: 'STANDARD' | 'LICENSE_PERCENT'; ratePercent?: string; calculationBase?: string;
+  grossTotal?: string; discountTotal?: string; netTotal?: string; sortOrder?: number;
 }
 export interface LogoKalemSection {
   id?: string; type: LogoKalemSectionType; title: string; currency: string; billingPeriod: 'ONE_TIME' | 'MONTHLY' | 'ANNUAL';

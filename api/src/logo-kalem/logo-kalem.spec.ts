@@ -7,6 +7,7 @@ import { LogoKalemPdfService } from './logo-kalem-pdf.service';
 import { LogoKalemService, LogoKalemDetail } from './logo-kalem.service';
 import { FixLogoKalemObjectCatalogName1784650600000 } from '../migrations/1784650600000-FixLogoKalemObjectCatalogName';
 import { FixLogoKalemObjectCatalogTranslations1784653000000 } from '../migrations/1784653000000-FixLogoKalemObjectCatalogTranslations';
+import { LogoKalemLemPercentagePricing1784660000000 } from '../migrations/1784660000000-LogoKalemLemPercentagePricing';
 
 const detail = (language: 'tr' | 'az' | 'en' = 'tr', attachments = true): LogoKalemDetail => ({
   quote: { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', baseNumber: 'LK-2026-AAAAAAAA', customerName: '<Ema & Agro>', contactName: 'Aydın', contactEmail: 'a@example.com', status: QuoteStatus.DRAFT } as never,
@@ -103,6 +104,22 @@ describe('LogoKalemPdfService', () => {
     expect(html.indexOf(logoTitle)).toBeLessThan(html.indexOf(kalemTitle));
     expect((html.match(/class="section-summary"/g) ?? [])).toHaveLength(2);
   });
+
+  it.each([
+    ['tr', 'Lisans Liste Toplamı', 'Yıllık LEM Oranı', 'Yıllık LEM Bedeli', '%12,50', '1.000,00 USD'],
+    ['az', 'Lisenziya Siyahı Cəmi', 'İllik LEM Faizi', 'İllik LEM Məbləği', '12,50%', '1.000,00 USD'],
+    ['en', 'Licence List Total', 'Annual LEM Rate', 'Annual LEM Fee', '12.50%', '1,000.00 USD'],
+  ] as const)('%s yüzdesel LEM hesabını PDF üzerinde açıklar', (language, baseLabel, rateLabel, feeLabel, rate, base) => {
+    const offer = detail(language, false);
+    offer.sections[3].subtotal = '125.00'; offer.sections[3].netTotal = '125.00';
+    offer.sections[3].lines = [{ name: 'Yıllık LEM', unit: 'Yıl', currency: 'USD', quantity: '1', unitPrice: '125.00', pricingMode: 'LICENSE_PERCENT', ratePercent: '12.50', calculationBase: '1000.00', discountType: 'NONE', discountValue: '0', grossTotal: '125.00', discountTotal: '0.00', netTotal: '125.00' } as never];
+    const html = service.html(offer);
+    expect(html).toContain(baseLabel);
+    expect(html).toContain(rateLabel);
+    expect(html).toContain(feeLabel);
+    expect(html).toContain(rate);
+    expect(html).toContain(base);
+  });
 });
 
 describe('FixLogoKalemObjectCatalogName migration', () => {
@@ -179,6 +196,38 @@ describe('LogoKalemService finans ve gönderim korumaları', () => {
     const query = { addSelect: jest.fn().mockReturnThis(), where: jest.fn().mockReturnThis(), getOne: jest.fn().mockResolvedValue({ pdfSnapshot: snapshot, pdfSha256: 'yanlis' }) };
     (service as any).revisions = { createQueryBuilder: jest.fn().mockReturnValue(query) };
     await expect(service.renderPdf(locked.quote.id)).rejects.toThrow('snapshot bütünlüğü');
+  });
+
+  it('LEM tabanına yalnız MAIN brüt lisanslarını indirimlerden etkilenmeden dahil eder', () => {
+    const base = (service as any).calculateLicenseBase([
+      { type: 'MAIN', lines: [{ quantity: '2', unitPrice: '100', discountType: 'PERCENT', discountValue: '50' }, { quantity: '1', unitPrice: '25.55' }] },
+      { type: 'SERVICE', lines: [{ quantity: '1', unitPrice: '500' }] },
+      { type: 'MAINTENANCE', lines: [{ quantity: '1', unitPrice: '40' }] },
+    ]);
+    expect(base).toBe(225.55);
+  });
+
+  it('yıllık LEM tutarını lisans tabanı ve yüzde üzerinden kuruşa yuvarlar', () => {
+    const line = (service as any).calculateLicensePercentLine({ name: 'LEM', ratePercent: '12.50', discountType: 'NONE', discountValue: '0', currency: 'USD' }, 0, 123.45);
+    expect(line).toMatchObject({ pricingMode: 'LICENSE_PERCENT', quantity: '1', calculationBase: '123.45', ratePercent: '12.50', unitPrice: '15.43', grossTotal: '15.43', discountTotal: '0.00', netTotal: '15.43' });
+  });
+
+  it.each(['0', '-1', '100.01'])('geçersiz LEM oranını reddeder: %s', (ratePercent) => {
+    expect(() => (service as any).calculateLicensePercentLine({ name: 'LEM', ratePercent, discountType: 'NONE', discountValue: '0' }, 0, 100)).toThrow('LEM oranı');
+  });
+
+  it('yüzdesel LEM satırına ek indirim uygulanmasını reddeder', () => {
+    expect(() => (service as any).calculateLicensePercentLine({ name: 'LEM', ratePercent: '10', discountType: 'PERCENT', discountValue: '5' }, 0, 100)).toThrow('indirim uygulanamaz');
+  });
+});
+
+describe('LogoKalemLemPercentagePricing migration', () => {
+  it('eski satırları STANDARD bırakan geriye uyumlu sütunları ekler', async () => {
+    const query = jest.fn().mockResolvedValue(undefined);
+    await new LogoKalemLemPercentagePricing1784660000000().up({ query } as never);
+    expect(query.mock.calls.map((call) => call[0]).join('\n')).toContain(`"pricingMode" varchar NOT NULL DEFAULT 'STANDARD'`);
+    expect(query.mock.calls.map((call) => call[0]).join('\n')).toContain('"ratePercent" numeric(5,2)');
+    expect(query.mock.calls.map((call) => call[0]).join('\n')).toContain('"calculationBase" numeric(14,2)');
   });
 });
 

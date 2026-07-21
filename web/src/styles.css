@@ -216,10 +216,13 @@ h3 { color: var(--navy-950); }
 .lk-line { display: grid; grid-template-columns: minmax(180px,2fr) 1fr 84px 84px 78px 105px 116px 96px 38px; gap: .5rem; padding: .75rem; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 11px; }
 .lk-line input, .lk-line select, .lk-line textarea { min-width: 0; }
 .lk-line-description { grid-column: 1 / -1; min-height: 58px; }
+.lk-lem-line { grid-template-columns: minmax(180px, 1.5fr) repeat(3, minmax(150px, 1fr)) 38px; align-items: end; background: var(--teal-50); border-color: var(--teal-200); }
+.lk-lem-line label span { display: block; margin-bottom: .3rem; color: var(--slate-500); font-size: .7rem; font-weight: 700; }
+.lk-lem-line input[readonly] { color: var(--navy-900); font-weight: 700; background: var(--white); }
 .icon-button.danger { color: var(--danger); background: var(--danger-soft); border-color: #f1c5ca; }
 .lk-adjustments { display: grid; gap: .65rem; }
 .lk-adjustments > div { display: grid; grid-template-columns: 1fr 1fr 2fr 1fr 1fr 38px; gap: .5rem; }
-.lk-total-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin-top: 1.4rem; }
+.lk-total-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin-top: 1.4rem; }
 .lk-total-strip div { padding: 1.1rem; color: var(--white); background: linear-gradient(135deg, var(--navy-900), var(--navy-800)); border-radius: 12px; }
 .lk-total-strip span, .lk-total-strip strong { display: block; }
 .lk-total-strip span { color: #9ec8cd; font-size: .72rem; }
@@ -238,6 +241,7 @@ h3 { color: var(--navy-950); }
   .lk-editor-head { grid-template-columns: 1fr auto; }
   .lk-editor-head > button:first-child { grid-column: 1 / -1; justify-self: start; }
   .lk-line { grid-template-columns: 2fr 1fr 80px; }
+  .lk-lem-line { grid-template-columns: 1fr 1fr; }
   .lk-line-description { grid-column: 1 / -1; }
   .lk-adjustments > div { grid-template-columns: 1fr 1fr; }
   .lk-process-form { grid-template-columns: 1fr; }
@@ -249,6 +253,7 @@ h3 { color: var(--navy-950); }
   .lk-editor-card { min-height: 0; padding: 1rem; }
   .lk-steps { margin-inline: -1rem; padding-inline: 1rem; }
   .lk-line { grid-template-columns: 1fr 1fr; }
+  .lk-lem-line { grid-template-columns: 1fr; }
   .lk-line-name, .lk-line-description { grid-column: 1 / -1; }
   .lk-catalog-picker, .lk-preview-actions { align-items: stretch; flex-direction: column; }
   .lk-total-strip, .lk-review { grid-template-columns: 1fr; }

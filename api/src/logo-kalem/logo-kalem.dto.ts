@@ -13,6 +13,8 @@ export class LogoKalemLineDto {
   @IsOptional() @IsNumberString() userCount?: string;
   @IsNumberString() quantity: string;
   @IsNumberString() unitPrice: string;
+  @IsOptional() @IsIn(['STANDARD', 'LICENSE_PERCENT']) pricingMode?: 'STANDARD' | 'LICENSE_PERCENT';
+  @IsOptional() @IsNumberString() ratePercent?: string;
   @IsOptional() @IsIn(['NONE', 'FIXED', 'PERCENT']) discountType?: 'NONE' | 'FIXED' | 'PERCENT';
   @IsOptional() @IsNumberString() discountValue?: string;
   @IsOptional() @IsInt() @Min(0) sortOrder?: number;
