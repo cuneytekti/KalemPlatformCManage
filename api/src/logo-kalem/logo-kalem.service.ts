@@ -16,10 +16,12 @@ import { KALEM_EMAIL_LOGO_BASE64 } from '../quotes/quote-email-logo';
 import { LogoKalemActivityDto, LogoKalemCatalogDto, LogoKalemSectionDto, SaveLogoKalemQuoteDto } from './logo-kalem.dto';
 import { LogoKalemPdfService } from './logo-kalem-pdf.service';
 
+export type LogoKalemLineDetail = LogoKalemQuoteLine & { catalogCode?: string };
+
 export type LogoKalemDetail = {
   quote: LogoKalemQuote;
   revision: LogoKalemQuoteRevision;
-  sections: Array<LogoKalemQuoteSection & { lines: LogoKalemQuoteLine[] }>;
+  sections: Array<LogoKalemQuoteSection & { lines: LogoKalemLineDetail[] }>;
   adjustments: LogoKalemQuoteAdjustment[];
 };
 
@@ -58,8 +60,14 @@ export class LogoKalemService {
     if (!revision) throw new NotFoundException('Teklif revizyonu bulunamadı');
     const sections = await this.sections.find({ where: { revisionId: rid }, order: { sortOrder: 'ASC' } });
     const lines = sections.length ? await this.lines.find({ where: { sectionId: In(sections.map((s) => s.id)) }, order: { sortOrder: 'ASC' } }) : [];
-    const lineMap = new Map<string, LogoKalemQuoteLine[]>();
-    lines.forEach((line) => lineMap.set(line.sectionId, [...(lineMap.get(line.sectionId) ?? []), line]));
+    const catalogIds = [...new Set(lines.map((line) => line.catalogItemId).filter(Boolean) as string[])];
+    const catalogRows = catalogIds.length ? await this.catalog.findBy({ id: In(catalogIds) }) : [];
+    const catalogCodeMap = new Map(catalogRows.map((item) => [item.id, item.code]));
+    const lineMap = new Map<string, LogoKalemLineDetail[]>();
+    lines.forEach((line) => {
+      const enriched = Object.assign(line, { catalogCode: line.catalogItemId ? catalogCodeMap.get(line.catalogItemId) : undefined });
+      lineMap.set(line.sectionId, [...(lineMap.get(line.sectionId) ?? []), enriched]);
+    });
     const adjustmentRows = await this.adjustments.find({ where: { revisionId: rid }, order: { sortOrder: 'ASC' } });
     return { quote, revision, sections: sections.map((s) => Object.assign(s, { lines: lineMap.get(s.id) ?? [] })), adjustments: adjustmentRows };
   }

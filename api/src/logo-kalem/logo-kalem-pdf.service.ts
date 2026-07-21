@@ -14,6 +14,7 @@ const copy = {
     certificates: 'Sertifikalar', closing: 'Birlikte değer üretelim', preparedFor: 'Hazırlanan kurum', contact: 'Muhatap', date: 'Teklif tarihi',
     meeting: 'Görüşme tarihi', product: 'Ürün / Hizmet', qty: 'Miktar', unit: 'Birim', price: 'Birim Fiyat', discount: 'İndirim', total: 'Toplam',
     listTotal: 'Toplam Liste Fiyatı', discountRate: 'İndirim Oranı', discountAmount: 'İndirim Tutarı', netTotal: 'Net Toplam',
+    logoLicenses: 'LOGO Lisansları', kalemLicenses: 'KALEM Lisansları', otherLicenses: 'Diğer Lisans ve Modüller',
     main: 'Ana Proje', maintenance: 'Bakım', lem: 'Yıllık LEM', tax: 'Vergiler', duration: 'Proje Süresi', payment: 'Ödeme', validity: 'Geçerlilik',
     delivery: 'Teslimat', travel: 'Seyahat ve Konaklama', notes: 'Notlar', confidential: 'GİZLİ • Yalnız belirtilen kurumun değerlendirmesi içindir',
     subject: 'Konu', sender: 'Hazırlayan', introFallback: 'İş hedeflerinizi destekleyecek, sürdürülebilir ve ölçeklenebilir bir Logo–Kalem çözüm modeli sunuyoruz.',
@@ -30,6 +31,7 @@ const copy = {
     certificates: 'Sertifikatlar', closing: 'Birlikdə dəyər yaradaq', preparedFor: 'Təklif edilən qurum', contact: 'Əlaqədar şəxs', date: 'Təklif tarixi',
     meeting: 'Görüş tarixi', product: 'Məhsul / Xidmət', qty: 'Miqdar', unit: 'Vahid', price: 'Vahid Qiymət', discount: 'Endirim', total: 'Cəm',
     listTotal: 'Ümumi Siyahı Qiyməti', discountRate: 'Endirim Faizi', discountAmount: 'Endirim Məbləği', netTotal: 'Xalis Cəm',
+    logoLicenses: 'LOGO Lisenziyaları', kalemLicenses: 'KALEM Lisenziyaları', otherLicenses: 'Digər Lisenziya və Modullar',
     main: 'Əsas Layihə', maintenance: 'Texniki Xidmət', lem: 'İllik LEM', tax: 'Vergilər', duration: 'Layihə Müddəti', payment: 'Ödəniş', validity: 'Etibarlılıq',
     delivery: 'Təhvil', travel: 'Səfər və Yaşayış', notes: 'Qeydlər', confidential: 'MƏXFİ • Yalnız göstərilən qurumun qiymətləndirilməsi üçündür',
     subject: 'Mövzu', sender: 'Hazırlayan', introFallback: 'Biznes hədəflərinizi dəstəkləyən davamlı və miqyaslana bilən Logo–Kalem həll modeli təqdim edirik.',
@@ -46,6 +48,7 @@ const copy = {
     certificates: 'Certificates', closing: 'Let us create value together', preparedFor: 'Prepared for', contact: 'Contact', date: 'Proposal date',
     meeting: 'Meeting date', product: 'Product / Service', qty: 'Quantity', unit: 'Unit', price: 'Unit Price', discount: 'Discount', total: 'Total',
     listTotal: 'Total List Price', discountRate: 'Discount Rate', discountAmount: 'Discount Amount', netTotal: 'Net Total',
+    logoLicenses: 'LOGO Licences', kalemLicenses: 'KALEM Licences', otherLicenses: 'Other Licences and Modules',
     main: 'Main Project', maintenance: 'Maintenance', lem: 'Annual LEM', tax: 'Taxes', duration: 'Project Duration', payment: 'Payment', validity: 'Validity',
     delivery: 'Delivery', travel: 'Travel and Accommodation', notes: 'Notes', confidential: 'CONFIDENTIAL • Intended solely for the named organisation',
     subject: 'Subject', sender: 'Prepared by', introFallback: 'We offer a sustainable and scalable Logo–Kalem solution model designed to support your business objectives.',
@@ -75,7 +78,7 @@ export class LogoKalemPdfService {
     pages.push(this.page(detail, t.executive, `<div class="intro-grid"><div class="statement">${this.paragraphs(detail.revision.introduction || t.introFallback)}</div><div class="meta-card"><span>${t.subject}</span><strong>${this.e(detail.revision.subject || detail.revision.projectTitle)}</strong>${detail.revision.meetingDate ? `<span>${t.meeting}</span><strong>${this.date(detail.revision.meetingDate, lang)}</strong>` : ''}</div></div><div class="section-block"><h2>${t.solution}</h2>${this.paragraphs(detail.revision.projectScope || t.scopeFallback)}</div><div class="callout">${this.paragraphs(detail.revision.projectTeam || t.teamFallback)}</div>`, number));
     pages.push(this.page(detail, t.about, `<p class="large-copy">${this.e(t.aboutBody)}</p><div class="value-grid">${t.values.map((v, i) => `<div><b>0${i + 1}</b><span>${this.e(v)}</span></div>`).join('')}</div><div class="brand-band"><strong>Logo + KL-Retail</strong><span>ERP • Retail • Finance • Operations • Analytics</span></div>`, number));
 
-    const populated = detail.sections.filter((section) => section.lines.length);
+    const populated = this.pricingSections(detail.sections, t);
     if (!populated.length) pages.push(this.page(detail, t.pricing, '<div class="empty">—</div>', number));
     populated.forEach((section) => {
       const chunks = this.chunk(section.lines, 9);
@@ -113,6 +116,23 @@ export class LogoKalemPdfService {
     return `<section class="page${cover ? ' cover' : ''}"><header><img src="data:image/png;base64,${KALEM_EMAIL_LOGO_BASE64}"><span>LOGO–KALEM</span></header><main>${cover ? '' : `<div class="title"><div class="title-meta"><img src="data:image/png;base64,${KALEM_EMAIL_LOGO_BASE64}"><span>${this.e(number)}</span></div><h1>${this.e(title)}</h1></div>`}${body}</main><footer><span>${this.e(copy[detail.revision.language].confidential)}</span><span>${this.e(number)} • __PAGE__</span></footer></section>`;
   }
   private table(lines: LogoKalemDetail['sections'][number]['lines'], currency: string, lang: Language, t: typeof copy[Language]): string { return `<table><thead><tr><th>${t.product}</th><th>${t.qty}</th><th>${t.unit}</th><th>${t.price}</th><th>${t.discount}</th><th>${t.total}</th></tr></thead><tbody>${lines.map((l) => `<tr><td><strong>${this.e(l.name)}</strong>${l.description ? `<small>${this.e(l.description)}</small>` : ''}${l.location ? `<em>${this.e(l.location)}</em>` : ''}</td><td>${this.e(l.quantity)}</td><td>${this.e(l.unit)}</td><td>${this.amount(l.unitPrice, currency, lang)}</td><td><strong class="discount-rate">${this.percent(this.lineDiscountRate(l), lang)}</strong><small>${this.amount(l.discountTotal, currency, lang)}</small></td><td><strong>${this.amount(l.netTotal, currency, lang)}</strong></td></tr>`).join('')}</tbody></table>`; }
+  private pricingSections(sections: LogoKalemDetail['sections'], t: typeof copy[Language]): LogoKalemDetail['sections'] {
+    return sections.flatMap((section) => {
+      if (!section.lines.length) return [];
+      if (section.type !== 'MAIN') return [section];
+      const groups = [
+        { title: t.logoLicenses, lines: section.lines.filter((line) => this.codeStartsWith(line.catalogCode, 'LOGO')) },
+        { title: t.kalemLicenses, lines: section.lines.filter((line) => this.codeStartsWith(line.catalogCode, 'KLM')) },
+        { title: t.otherLicenses, lines: section.lines.filter((line) => !this.codeStartsWith(line.catalogCode, 'LOGO') && !this.codeStartsWith(line.catalogCode, 'KLM')) },
+      ];
+      return groups.filter((group) => group.lines.length).map((group) => this.groupedSection(section, group.title, group.lines));
+    });
+  }
+  private groupedSection(section: LogoKalemDetail['sections'][number], title: string, lines: LogoKalemDetail['sections'][number]['lines']): LogoKalemDetail['sections'][number] {
+    const total = (key: 'grossTotal' | 'discountTotal' | 'netTotal') => lines.reduce((sum, line) => sum + Number(line[key] || 0), 0).toFixed(2);
+    return { ...section, title, lines, subtotal: total('grossTotal'), discountTotal: total('discountTotal'), netTotal: total('netTotal') };
+  }
+  private codeStartsWith(code: string | undefined, prefix: string): boolean { return code?.trim().toUpperCase().startsWith(prefix) ?? false; }
   private sectionSummary(section: LogoKalemDetail['sections'][number], lang: Language, t: typeof copy[Language]): string {
     const rate = this.effectiveRate(section.discountTotal, section.subtotal);
     return `<div class="section-summary"><div><span>${t.listTotal}</span><strong>${this.amount(section.subtotal, section.currency, lang)}</strong></div><div><span>${t.discountRate}</span><strong>${this.percent(rate, lang)}</strong></div><div><span>${t.discountAmount}</span><strong>${this.amount(section.discountTotal, section.currency, lang)}</strong></div><div class="accent"><span>${t.netTotal}</span><strong>${this.amount(section.netTotal, section.currency, lang)}</strong></div></div>`;

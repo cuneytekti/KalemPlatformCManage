@@ -86,6 +86,23 @@ describe('LogoKalemPdfService', () => {
     expect((html.match(/class="section-summary"/g) ?? [])).toHaveLength(1);
     expect(html.indexOf('Ürün 10')).toBeLessThan(html.indexOf('class="section-summary"'));
   });
+
+  it.each([
+    ['tr', 'LOGO Lisansları', 'KALEM Lisansları'],
+    ['az', 'LOGO Lisenziyaları', 'KALEM Lisenziyaları'],
+    ['en', 'LOGO Licences', 'KALEM Licences'],
+  ] as const)('%s PDF içinde LOGO ve KLM kodlu lisansları ayrı tablolara böler', (language, logoTitle, kalemTitle) => {
+    const offer = detail(language, false);
+    offer.sections[0].lines = [
+      { catalogCode: 'LOGO-T3-ERP', name: 'Logo Tiger', unit: 'Lisans', currency: 'USD', quantity: '1', unitPrice: '100.00', discountType: 'PERCENT', discountValue: '10', grossTotal: '100.00', discountTotal: '10.00', netTotal: '90.00' } as never,
+      { catalogCode: 'KLM-RETAIL', name: 'Kalem Retail', unit: 'Lisans', currency: 'USD', quantity: '2', unitPrice: '100.00', discountType: 'NONE', discountValue: '0', grossTotal: '200.00', discountTotal: '0.00', netTotal: '200.00' } as never,
+    ];
+    const html = service.html(offer);
+    expect(html).toContain(`<h1>${logoTitle}</h1>`);
+    expect(html).toContain(`<h1>${kalemTitle}</h1>`);
+    expect(html.indexOf(logoTitle)).toBeLessThan(html.indexOf(kalemTitle));
+    expect((html.match(/class="section-summary"/g) ?? [])).toHaveLength(2);
+  });
 });
 
 describe('FixLogoKalemObjectCatalogName migration', () => {
@@ -124,6 +141,26 @@ describe('LogoKalemService finans ve gönderim korumaları', () => {
     const fixed = (service as any).calculateLine({ name: 'B', quantity: '2', unitPrice: '25', discountType: 'FIXED', discountValue: '7.25' }, 0);
     expect(percent).toMatchObject({ grossTotal: '30.45', discountTotal: '3.05', netTotal: '27.40' });
     expect(fixed).toMatchObject({ grossTotal: '50.00', discountTotal: '7.25', netTotal: '42.75' });
+  });
+
+  it('teklif detayındaki katalog satırlarına ürün kodunu ekler', async () => {
+    const sample = detail('tr');
+    sample.quote.activeRevisionId = sample.revision.id;
+    const line = { ...sample.sections[0].lines[0], sectionId: sample.sections[0].id, catalogItemId: 'catalog-1' } as never;
+    const detailService = new LogoKalemService(
+      { findOneBy: jest.fn().mockResolvedValue(sample.quote) } as never,
+      { findOneBy: jest.fn().mockResolvedValue(sample.revision) } as never,
+      { find: jest.fn().mockResolvedValue([sample.sections[0]]) } as never,
+      { find: jest.fn().mockResolvedValue([line]) } as never,
+      { find: jest.fn().mockResolvedValue([]) } as never,
+      {} as never,
+      { findBy: jest.fn().mockResolvedValue([{ id: 'catalog-1', code: 'LOGO-T3-ERP' }]) } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    const result = await detailService.detail(sample.quote.id);
+    expect(result.sections[0].lines[0].catalogCode).toBe('LOGO-T3-ERP');
   });
 
   it('SMTP başarısızlığında transaction başlatmaz ve revizyonu kilitlemez', async () => {
