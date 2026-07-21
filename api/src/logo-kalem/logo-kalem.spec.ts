@@ -6,6 +6,7 @@ import { SaveLogoKalemQuoteDto } from './logo-kalem.dto';
 import { LogoKalemPdfService } from './logo-kalem-pdf.service';
 import { LogoKalemService, LogoKalemDetail } from './logo-kalem.service';
 import { FixLogoKalemObjectCatalogName1784650600000 } from '../migrations/1784650600000-FixLogoKalemObjectCatalogName';
+import { FixLogoKalemObjectCatalogTranslations1784653000000 } from '../migrations/1784653000000-FixLogoKalemObjectCatalogTranslations';
 
 const detail = (language: 'tr' | 'az' | 'en' = 'tr', attachments = true): LogoKalemDetail => ({
   quote: { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', baseNumber: 'LK-2026-AAAAAAAA', customerName: '<Ema & Agro>', contactName: 'Aydın', contactEmail: 'a@example.com', status: QuoteStatus.DRAFT } as never,
@@ -96,6 +97,19 @@ describe('FixLogoKalemObjectCatalogName migration', () => {
     expect(sql).toContain(`"nameTr" = 'Logo Tiger 3 Object Ana Paket'`);
     expect(sql).toContain(`BTRIM(COALESCE("descriptionTr", '')) = 'Obje 2kullanıcı arttırımı'`);
     expect(sql).toContain(`SET "nameTr" = 'Obje 2 Kullanıcı Artırımı'`);
+  });
+});
+
+describe('FixLogoKalemObjectCatalogTranslations migration', () => {
+  it('eski AZ/EN katalog adlarını koşullu olarak yerelleştirir', async () => {
+    const query = jest.fn().mockResolvedValue(undefined);
+    await new FixLogoKalemObjectCatalogTranslations1784653000000().up({ query } as never);
+    const sql = query.mock.calls[0][0] as string;
+    expect(sql).toContain(`"code" = 'LOGO-T3-OBJE2'`);
+    expect(sql).toContain(`THEN 'Obyekt 2 İstifadəçi Artırımı'`);
+    expect(sql).toContain(`THEN 'Object 2 User Extension'`);
+    expect(sql).toContain(`BTRIM(COALESCE("nameAz", '')) IN ('', 'Logo Tiger 3 Object Ana Paket')`);
+    expect(sql).toContain(`BTRIM(COALESCE("nameEn", '')) IN ('', 'Logo Tiger 3 Object Ana Paket')`);
   });
 });
 
