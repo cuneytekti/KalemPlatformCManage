@@ -150,14 +150,14 @@ describe('LogoKalemPdfService', () => {
   });
 
   it.each([
-    ['tr', 'Mağaza Bazlı Açılış Maliyeti', 'Liste Tutarı', 'Net Yeni Mağaza Açılış Maliyeti', '135,00 USD'],
-    ['az', 'Mağaza üzrə Açılış Xərci', 'Siyahı Məbləği', 'Yeni Mağazanın Xalis Açılış Xərci', '135,00 USD'],
-    ['en', 'Store Opening Cost', 'List Amount', 'Net New Store Opening Cost', '135.00 USD'],
-  ] as const)('%s mağaza maliyetine yalnız MAIN içindeki RETAIL_BRANCH satırlarını dahil eder', (language, title, listLabel, netLabel, netAmount) => {
+    ['tr', 'Mağaza Bazlı Açılış Maliyeti', 'Liste Tutarı', 'Şube Artırımı Sayısı', 'Net Yeni Mağaza Açılış Maliyeti', '67,50 USD'],
+    ['az', 'Mağaza üzrə Açılış Xərci', 'Siyahı Məbləği', 'Filial Artırımı Sayı', 'Yeni Mağazanın Xalis Açılış Xərci', '67,50 USD'],
+    ['en', 'Store Opening Cost', 'List Amount', 'Branch Increase Quantity', 'Net New Store Opening Cost', '67.50 USD'],
+  ] as const)('%s mağaza maliyetini RETAIL_BRANCH net toplamını KLR-SUBE miktarına bölerek hesaplar', (language, title, listLabel, branchLabel, netLabel, netAmount) => {
     const offer = detail(language, false);
     offer.sections[0].lines = [
-      { catalogCategory: ' retail_branch ', name: 'Şube Paketi', unit: 'Şube', currency: 'USD', quantity: '2', unitPrice: '50.00', grossTotal: '100.00', discountType: 'PERCENT', discountValue: '10', discountTotal: '10.00', netTotal: '90.00' } as never,
-      { catalogCategory: 'RETAIL_BRANCH', name: 'Kasa Paketi', unit: 'Kasa', currency: 'USD', quantity: '1', unitPrice: '50.00', grossTotal: '50.00', discountType: 'FIXED', discountValue: '5', discountTotal: '5.00', netTotal: '45.00' } as never,
+      { catalogCode: ' klr-sube ', catalogCategory: ' retail_branch ', name: 'Şube Paketi', unit: 'Şube', currency: 'USD', quantity: '2', unitPrice: '50.00', grossTotal: '100.00', discountType: 'PERCENT', discountValue: '10', discountTotal: '10.00', netTotal: '90.00' } as never,
+      { catalogCode: 'KLR-MPOS', catalogCategory: 'RETAIL_BRANCH', name: 'Kasa Paketi', unit: 'Kasa', currency: 'USD', quantity: '1', unitPrice: '50.00', grossTotal: '50.00', discountType: 'FIXED', discountValue: '5', discountTotal: '5.00', netTotal: '45.00' } as never,
       { catalogCategory: 'LICENSE', name: 'Merkez Lisansı', unit: 'Lisans', currency: 'USD', quantity: '1', unitPrice: '500.00', grossTotal: '500.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: '500.00' } as never,
     ];
     offer.sections[1].lines = [{ catalogCategory: 'RETAIL_BRANCH', name: 'Hariç Hizmet', unit: 'Hizmet', currency: 'USD', quantity: '1', unitPrice: '900.00', grossTotal: '900.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: '900.00' } as never];
@@ -170,6 +170,7 @@ describe('LogoKalemPdfService', () => {
     expect(costLines.reduce((sum: number, line: { netTotal: string }) => sum + Number(line.netTotal), 0)).toBe(135);
     expect(html).toContain(title);
     expect(html).toContain(listLabel);
+    expect(html).toContain(branchLabel);
     expect(html).toContain(netLabel);
     expect(html).toContain('Şube Paketi');
     expect(html).toContain('Kasa Paketi');
@@ -183,9 +184,17 @@ describe('LogoKalemPdfService', () => {
     expect(html).not.toContain('class="store-cost-summary"');
   });
 
+  it('KLR-SUBE satırı veya geçerli miktarı yoksa bölme işlemi yerine açıklayıcı durum gösterir', () => {
+    const offer = detail('tr', false);
+    offer.sections[0].lines = [{ catalogCode: 'KLR-MPOS', catalogCategory: 'RETAIL_BRANCH', name: 'Kasa Paketi', unit: 'Kasa', currency: 'USD', quantity: '2', unitPrice: '50.00', grossTotal: '100.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: '100.00' } as never];
+    const html = service.html(offer);
+    expect(html).toContain('KLR-SUBE kodlu KL-Retail INT Şube Artırımı');
+    expect(html).not.toContain('class="store-cost-summary"');
+  });
+
   it('altı mağaza ürününü aşan detayları devam sayfalarına taşır ve özeti yalnız sonda gösterir', () => {
     const offer = detail('tr', false);
-    offer.sections[0].lines = Array.from({ length: 16 }, (_, index) => ({ catalogCategory: 'RETAIL_BRANCH', name: `Mağaza Ürünü ${index + 1}`, unit: 'Adet', currency: 'USD', quantity: '1', unitPrice: '10.00', grossTotal: '10.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: '10.00' } as never));
+    offer.sections[0].lines = Array.from({ length: 16 }, (_, index) => ({ catalogCode: index === 0 ? 'KLR-SUBE' : 'KLR-MPOS', catalogCategory: 'RETAIL_BRANCH', name: `Mağaza Ürünü ${index + 1}`, unit: 'Adet', currency: 'USD', quantity: index === 0 ? '2' : '1', unitPrice: '10.00', grossTotal: index === 0 ? '20.00' : '10.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: index === 0 ? '20.00' : '10.00' } as never));
     const html = service.html(offer);
     expect(html).toContain('Mağaza Bazlı Açılış Maliyeti (2)');
     expect(html).toContain('Mağaza Bazlı Açılış Maliyeti (3)');

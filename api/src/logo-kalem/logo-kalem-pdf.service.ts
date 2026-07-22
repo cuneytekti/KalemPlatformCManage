@@ -18,8 +18,9 @@ const copy = {
     licenseBase: 'Lisans Liste Toplamı', lemRate: 'Yıllık LEM Oranı', annualLem: 'Yıllık LEM Bedeli',
     licenses: 'Lisans Bedelleri', services: 'Hizmet Bedelleri', monthlyService: 'Aylık Hizmet', vat: 'KDV', amountWithVat: 'KDV Dâhil Toplam', offerTotal: 'Teklif Genel Toplamı', offerExclVat: 'KDV Hariç Toplam', offerInclVat: 'KDV Dâhil Toplam',
     recurringExcluded: 'Aylık hizmet ve yıllık LEM bedelleri teklif genel toplamına dahil değildir.',
-    storeCost: 'Mağaza Bazlı Açılış Maliyeti', storeListAmount: 'Liste Tutarı', storeNetCost: 'Net Yeni Mağaza Açılış Maliyeti',
+    storeCost: 'Mağaza Bazlı Açılış Maliyeti', storeListAmount: 'Liste Tutarı', storeBranchCount: 'Şube Artırımı Sayısı', storeNetCost: 'Net Yeni Mağaza Açılış Maliyeti',
     storeEmpty: 'Yeni mağaza maliyeti hesaplamak için teklife RETAIL_BRANCH kategorili bir ürün eklenmemiştir.',
+    storeBranchMissing: 'Mağaza bazlı maliyet hesaplamak için KLR-SUBE kodlu KL-Retail INT Şube Artırımı ürünü ve sıfırdan büyük miktarı gereklidir.',
     logoLicenses: 'LOGO Lisansları', kalemLicenses: 'KALEM Lisansları', otherLicenses: 'Diğer Lisans ve Modüller',
     main: 'Ana Proje', maintenance: 'Bakım', lem: 'Yıllık LEM', tax: 'Vergiler', duration: 'Proje Süresi', payment: 'Ödeme', validity: 'Geçerlilik',
     delivery: 'Teslimat', travel: 'Seyahat ve Konaklama', notes: 'Notlar', confidential: 'GİZLİ • Yalnız belirtilen kurumun değerlendirmesi içindir',
@@ -40,8 +41,9 @@ const copy = {
     licenseBase: 'Lisenziya Siyahı Cəmi', lemRate: 'İllik LEM Faizi', annualLem: 'İllik LEM Məbləği',
     licenses: 'Lisenziya Məbləğləri', services: 'Xidmət Məbləğləri', monthlyService: 'Aylıq Xidmət', vat: 'ƏDV', amountWithVat: 'ƏDV Daxil Cəm', offerTotal: 'Təklifin Ümumi Məbləği', offerExclVat: 'ƏDV-siz Ümumi Məbləğ', offerInclVat: 'ƏDV Daxil Ümumi Məbləğ',
     recurringExcluded: 'Aylıq xidmət və illik LEM məbləğləri təklifin ümumi məbləğinə daxil deyil.',
-    storeCost: 'Mağaza üzrə Açılış Xərci', storeListAmount: 'Siyahı Məbləği', storeNetCost: 'Yeni Mağazanın Xalis Açılış Xərci',
+    storeCost: 'Mağaza üzrə Açılış Xərci', storeListAmount: 'Siyahı Məbləği', storeBranchCount: 'Filial Artırımı Sayı', storeNetCost: 'Yeni Mağazanın Xalis Açılış Xərci',
     storeEmpty: 'Yeni mağaza xərcini hesablamaq üçün təklifə RETAIL_BRANCH kateqoriyalı məhsul əlavə edilməyib.',
+    storeBranchMissing: 'Mağaza üzrə xərci hesablamaq üçün KLR-SUBE kodlu KL-Retail INT Filial Artırımı məhsulu və sıfırdan böyük miqdarı tələb olunur.',
     logoLicenses: 'LOGO Lisenziyaları', kalemLicenses: 'KALEM Lisenziyaları', otherLicenses: 'Digər Lisenziya və Modullar',
     main: 'Əsas Layihə', maintenance: 'Texniki Xidmət', lem: 'İllik LEM', tax: 'Vergilər', duration: 'Layihə Müddəti', payment: 'Ödəniş', validity: 'Etibarlılıq',
     delivery: 'Təhvil', travel: 'Səfər və Yaşayış', notes: 'Qeydlər', confidential: 'MƏXFİ • Yalnız göstərilən qurumun qiymətləndirilməsi üçündür',
@@ -62,8 +64,9 @@ const copy = {
     licenseBase: 'Licence List Total', lemRate: 'Annual LEM Rate', annualLem: 'Annual LEM Fee',
     licenses: 'Licence Fees', services: 'Service Fees', monthlyService: 'Monthly Service', vat: 'VAT', amountWithVat: 'Total incl. VAT', offerTotal: 'Proposal Total', offerExclVat: 'Total Excl. VAT', offerInclVat: 'Total Incl. VAT',
     recurringExcluded: 'Monthly service and annual LEM fees are not included in the proposal total.',
-    storeCost: 'Store Opening Cost', storeListAmount: 'List Amount', storeNetCost: 'Net New Store Opening Cost',
+    storeCost: 'Store Opening Cost', storeListAmount: 'List Amount', storeBranchCount: 'Branch Increase Quantity', storeNetCost: 'Net New Store Opening Cost',
     storeEmpty: 'No RETAIL_BRANCH product has been added to the proposal for calculating a new store opening cost.',
+    storeBranchMissing: 'A KLR-SUBE KL-Retail INT Branch Increase product with a quantity greater than zero is required to calculate the per-store cost.',
     logoLicenses: 'LOGO Licences', kalemLicenses: 'KALEM Licences', otherLicenses: 'Other Licences and Modules',
     main: 'Main Project', maintenance: 'Maintenance', lem: 'Annual LEM', tax: 'Taxes', duration: 'Project Duration', payment: 'Payment', validity: 'Validity',
     delivery: 'Delivery', travel: 'Travel and Accommodation', notes: 'Notes', confidential: 'CONFIDENTIAL • Intended solely for the named organisation',
@@ -178,8 +181,10 @@ export class LogoKalemPdfService {
   private storeCostLines(detail: LogoKalemDetail): PricingLine[] { return detail.sections.filter((section) => section.type === 'MAIN').flatMap((section) => section.lines).filter((line) => line.catalogCategory?.trim().toUpperCase() === 'RETAIL_BRANCH'); }
   private storeCostBlock(lines: PricingLine[], includeSummary: boolean, allLines: PricingLine[], currency: string, lang: Language, t: typeof copy[Language], includeTitle = true): string {
     const rows = lines.map((line) => `<tr><td><strong>${this.e(line.name)}</strong></td><td>${this.e(line.quantity)}</td><td>${this.e(line.unit)}</td><td>${this.amount(line.grossTotal, currency, lang)}</td><td>${this.amount(line.discountTotal, currency, lang)}</td><td><strong>${this.amount(line.netTotal, currency, lang)}</strong></td></tr>`).join('');
-    const total = (key: 'grossTotal' | 'discountTotal' | 'netTotal') => allLines.reduce((sum, line) => sum + Number(line[key] || 0), 0).toFixed(2);
-    const summary = includeSummary ? `<table class="store-cost-summary"><thead><tr><th>${t.storeListAmount}</th><th>${t.discountAmount}</th><th>${t.storeNetCost}</th></tr></thead><tbody><tr><td>${this.amount(total('grossTotal'), currency, lang)}</td><td>${this.amount(total('discountTotal'), currency, lang)}</td><td><strong>${this.amount(total('netTotal'), currency, lang)}</strong></td></tr></tbody></table>` : '';
+    const total = (key: 'grossTotal' | 'discountTotal' | 'netTotal') => allLines.reduce((sum, line) => sum + Math.round(Number(line[key] || 0) * 100), 0) / 100;
+    const branchCount = allLines.filter((line) => line.catalogCode?.trim().toUpperCase() === 'KLR-SUBE').reduce((sum, line) => sum + Number(line.quantity || 0), 0);
+    const netStoreCost = branchCount > 0 ? Math.round(total('netTotal') / branchCount * 100) / 100 : 0;
+    const summary = includeSummary ? branchCount > 0 ? `<table class="store-cost-summary"><thead><tr><th>${t.storeListAmount}</th><th>${t.discountAmount}</th><th>${t.storeBranchCount}</th><th>${t.storeNetCost}</th></tr></thead><tbody><tr><td>${this.amount(total('grossTotal').toFixed(2), currency, lang)}</td><td>${this.amount(total('discountTotal').toFixed(2), currency, lang)}</td><td>${this.e(branchCount)}</td><td><strong>${this.amount(netStoreCost.toFixed(2), currency, lang)}</strong></td></tr></tbody></table>` : `<div class="store-cost-empty">${this.e(t.storeBranchMissing)}</div>` : '';
     return `<div class="store-cost-block">${includeTitle ? `<h2>${this.e(t.storeCost)}</h2>` : ''}<table class="store-cost-detail"><thead><tr><th>${t.product}</th><th>${t.qty}</th><th>${t.unit}</th><th>${t.storeListAmount}</th><th>${t.discountAmount}</th><th>${t.netTotal}</th></tr></thead><tbody>${rows}</tbody></table>${summary}</div>`;
   }
   private storeCostEmpty(t: typeof copy[Language]): string { return `<div class="store-cost-block"><h2>${this.e(t.storeCost)}</h2><div class="store-cost-empty">${this.e(t.storeEmpty)}</div></div>`; }
