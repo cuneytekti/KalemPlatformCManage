@@ -145,7 +145,52 @@ describe('LogoKalemPdfService', () => {
     expect(html).toContain(proposalNet);
     expect(html).toContain(proposalTotal);
     expect(html).not.toContain('LEM vergisi');
+    expect(html).not.toContain('Proje indirimi');
     expect(html).toContain(language === 'en' ? 'Monthly service and annual LEM fees are not included in the proposal total.' : language === 'az' ? 'Aylıq xidmət və illik LEM məbləğləri təklifin ümumi məbləğinə daxil deyil.' : 'Aylık hizmet ve yıllık LEM bedelleri teklif genel toplamına dahil değildir.');
+  });
+
+  it.each([
+    ['tr', 'Mağaza Bazlı Açılış Maliyeti', 'Liste Tutarı', 'Net Yeni Mağaza Açılış Maliyeti', '135,00 USD'],
+    ['az', 'Mağaza üzrə Açılış Xərci', 'Siyahı Məbləği', 'Yeni Mağazanın Xalis Açılış Xərci', '135,00 USD'],
+    ['en', 'Store Opening Cost', 'List Amount', 'Net New Store Opening Cost', '135.00 USD'],
+  ] as const)('%s mağaza maliyetine yalnız MAIN içindeki RETAIL_BRANCH satırlarını dahil eder', (language, title, listLabel, netLabel, netAmount) => {
+    const offer = detail(language, false);
+    offer.sections[0].lines = [
+      { catalogCategory: ' retail_branch ', name: 'Şube Paketi', unit: 'Şube', currency: 'USD', quantity: '2', unitPrice: '50.00', grossTotal: '100.00', discountType: 'PERCENT', discountValue: '10', discountTotal: '10.00', netTotal: '90.00' } as never,
+      { catalogCategory: 'RETAIL_BRANCH', name: 'Kasa Paketi', unit: 'Kasa', currency: 'USD', quantity: '1', unitPrice: '50.00', grossTotal: '50.00', discountType: 'FIXED', discountValue: '5', discountTotal: '5.00', netTotal: '45.00' } as never,
+      { catalogCategory: 'LICENSE', name: 'Merkez Lisansı', unit: 'Lisans', currency: 'USD', quantity: '1', unitPrice: '500.00', grossTotal: '500.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: '500.00' } as never,
+    ];
+    offer.sections[1].lines = [{ catalogCategory: 'RETAIL_BRANCH', name: 'Hariç Hizmet', unit: 'Hizmet', currency: 'USD', quantity: '1', unitPrice: '900.00', grossTotal: '900.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: '900.00' } as never];
+    offer.adjustments = [{ target: 'MAIN', type: 'DISCOUNT', label: 'Genel indirim', method: 'FIXED', value: '50', amount: '50.00' } as never, { target: 'MAIN', type: 'TAX', label: 'KDV', method: 'PERCENT', value: '20', amount: '100.00' } as never];
+    const costLines = (service as any).storeCostLines(offer);
+    const html = service.html(offer);
+    expect(costLines.map((line: { name: string }) => line.name)).toEqual(['Şube Paketi', 'Kasa Paketi']);
+    expect(costLines.reduce((sum: number, line: { grossTotal: string }) => sum + Number(line.grossTotal), 0)).toBe(150);
+    expect(costLines.reduce((sum: number, line: { discountTotal: string }) => sum + Number(line.discountTotal), 0)).toBe(15);
+    expect(costLines.reduce((sum: number, line: { netTotal: string }) => sum + Number(line.netTotal), 0)).toBe(135);
+    expect(html).toContain(title);
+    expect(html).toContain(listLabel);
+    expect(html).toContain(netLabel);
+    expect(html).toContain('Şube Paketi');
+    expect(html).toContain('Kasa Paketi');
+    expect(html).toContain(netAmount);
+    expect((html.match(/class="store-cost-summary"/g) ?? [])).toHaveLength(1);
+  });
+
+  it('RETAIL_BRANCH bulunmazsa yerelleştirilmiş boş durum gösterir', () => {
+    const html = service.html(detail('az', false));
+    expect(html).toContain('RETAIL_BRANCH kateqoriyalı məhsul əlavə edilməyib');
+    expect(html).not.toContain('class="store-cost-summary"');
+  });
+
+  it('altı mağaza ürününü aşan detayları devam sayfalarına taşır ve özeti yalnız sonda gösterir', () => {
+    const offer = detail('tr', false);
+    offer.sections[0].lines = Array.from({ length: 16 }, (_, index) => ({ catalogCategory: 'RETAIL_BRANCH', name: `Mağaza Ürünü ${index + 1}`, unit: 'Adet', currency: 'USD', quantity: '1', unitPrice: '10.00', grossTotal: '10.00', discountType: 'NONE', discountValue: '0', discountTotal: '0.00', netTotal: '10.00' } as never));
+    const html = service.html(offer);
+    expect(html).toContain('Mağaza Bazlı Açılış Maliyeti (2)');
+    expect(html).toContain('Mağaza Bazlı Açılış Maliyeti (3)');
+    expect((html.match(/class="store-cost-summary"/g) ?? [])).toHaveLength(1);
+    expect(html.indexOf('Mağaza Ürünü 16')).toBeLessThan(html.indexOf('class="store-cost-summary"'));
   });
 });
 
@@ -187,7 +232,7 @@ describe('LogoKalemService finans ve gönderim korumaları', () => {
     expect(fixed).toMatchObject({ grossTotal: '50.00', discountTotal: '7.25', netTotal: '42.75' });
   });
 
-  it('teklif detayındaki katalog satırlarına ürün kodunu ekler', async () => {
+  it('teklif detayındaki katalog satırlarına ürün kodu ve kategorisini ekler', async () => {
     const sample = detail('tr');
     sample.quote.activeRevisionId = sample.revision.id;
     const line = { ...sample.sections[0].lines[0], sectionId: sample.sections[0].id, catalogItemId: 'catalog-1' } as never;
@@ -198,13 +243,14 @@ describe('LogoKalemService finans ve gönderim korumaları', () => {
       { find: jest.fn().mockResolvedValue([line]) } as never,
       { find: jest.fn().mockResolvedValue([]) } as never,
       {} as never,
-      { findBy: jest.fn().mockResolvedValue([{ id: 'catalog-1', code: 'LOGO-T3-ERP' }]) } as never,
+      { findBy: jest.fn().mockResolvedValue([{ id: 'catalog-1', code: 'LOGO-T3-ERP', category: 'RETAIL_BRANCH' }]) } as never,
       {} as never,
       {} as never,
       {} as never,
     );
     const result = await detailService.detail(sample.quote.id);
     expect(result.sections[0].lines[0].catalogCode).toBe('LOGO-T3-ERP');
+    expect(result.sections[0].lines[0].catalogCategory).toBe('RETAIL_BRANCH');
   });
 
   it('SMTP başarısızlığında transaction başlatmaz ve revizyonu kilitlemez', async () => {

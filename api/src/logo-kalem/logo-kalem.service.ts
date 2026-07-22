@@ -16,7 +16,7 @@ import { KALEM_EMAIL_LOGO_BASE64 } from '../quotes/quote-email-logo';
 import { LogoKalemActivityDto, LogoKalemCatalogDto, LogoKalemSectionDto, SaveLogoKalemQuoteDto } from './logo-kalem.dto';
 import { LogoKalemPdfService } from './logo-kalem-pdf.service';
 
-export type LogoKalemLineDetail = LogoKalemQuoteLine & { catalogCode?: string };
+export type LogoKalemLineDetail = LogoKalemQuoteLine & { catalogCode?: string; catalogCategory?: string };
 
 export type LogoKalemDetail = {
   quote: LogoKalemQuote;
@@ -62,10 +62,11 @@ export class LogoKalemService {
     const lines = sections.length ? await this.lines.find({ where: { sectionId: In(sections.map((s) => s.id)) }, order: { sortOrder: 'ASC' } }) : [];
     const catalogIds = [...new Set(lines.map((line) => line.catalogItemId).filter(Boolean) as string[])];
     const catalogRows = catalogIds.length ? await this.catalog.findBy({ id: In(catalogIds) }) : [];
-    const catalogCodeMap = new Map(catalogRows.map((item) => [item.id, item.code]));
+    const catalogMap = new Map(catalogRows.map((item) => [item.id, { code: item.code, category: item.category }]));
     const lineMap = new Map<string, LogoKalemLineDetail[]>();
     lines.forEach((line) => {
-      const enriched = Object.assign(line, { catalogCode: line.catalogItemId ? catalogCodeMap.get(line.catalogItemId) : undefined });
+      const catalogItem = line.catalogItemId ? catalogMap.get(line.catalogItemId) : undefined;
+      const enriched = Object.assign(line, { catalogCode: catalogItem?.code, catalogCategory: catalogItem?.category });
       lineMap.set(line.sectionId, [...(lineMap.get(line.sectionId) ?? []), enriched]);
     });
     const adjustmentRows = await this.adjustments.find({ where: { revisionId: rid }, order: { sortOrder: 'ASC' } });
