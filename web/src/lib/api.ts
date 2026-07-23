@@ -215,7 +215,7 @@ export interface LogoKalemRevision extends Omit<LogoKalemQuoteInput, 'customerNa
 }
 export interface LogoKalemQuote {
   id: string; baseNumber: string; customerName: string; contactName?: string; contactEmail?: string; contactPhone?: string;
-  status: QuoteStatus; activeRevisionId?: string; sentAt?: string; activeRevision?: LogoKalemRevision; lastActivity?: QuoteActivity; createdAt: string;
+  status: QuoteStatus; activeRevisionId?: string; sentAt?: string; activeRevision?: LogoKalemRevision; activeCurrency?: string; lastActivity?: QuoteActivity; createdAt: string;
 }
 export interface LogoKalemQuoteDetail { quote: LogoKalemQuote; revision: LogoKalemRevision; sections: LogoKalemSection[]; adjustments: LogoKalemAdjustment[]; }
 

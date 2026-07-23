@@ -40,15 +40,18 @@ export class LogoKalemService {
     private readonly mail: MailService,
   ) {}
 
-  async list(): Promise<Array<LogoKalemQuote & { activeRevision?: LogoKalemQuoteRevision; lastActivity?: LogoKalemQuoteActivity }>> {
+  async list(): Promise<Array<LogoKalemQuote & { activeRevision?: LogoKalemQuoteRevision; activeCurrency?: string; lastActivity?: LogoKalemQuoteActivity }>> {
     const quotes = await this.quotes.find({ order: { createdAt: 'DESC' } });
     const revisionIds = quotes.map((q) => q.activeRevisionId).filter(Boolean) as string[];
     const revisions = revisionIds.length ? await this.revisions.findBy({ id: In(revisionIds) }) : [];
+    const mainSections = revisionIds.length ? await this.sections.find({ where: { revisionId: In(revisionIds), type: 'MAIN' }, order: { sortOrder: 'ASC' } }) : [];
     const acts = quotes.length ? await this.activities.find({ where: { quoteId: In(quotes.map((q) => q.id)) }, order: { activityAt: 'DESC' } }) : [];
     const revMap = new Map(revisions.map((r) => [r.id, r]));
+    const currencyMap = new Map<string, string>();
+    mainSections.forEach((section) => { if (!currencyMap.has(section.revisionId)) currencyMap.set(section.revisionId, section.currency); });
     const actMap = new Map<string, LogoKalemQuoteActivity>();
     acts.forEach((a) => { if (!actMap.has(a.quoteId)) actMap.set(a.quoteId, a); });
-    return quotes.map((q) => Object.assign(q, { activeRevision: q.activeRevisionId ? revMap.get(q.activeRevisionId) : undefined, lastActivity: actMap.get(q.id) }));
+    return quotes.map((q) => Object.assign(q, { activeRevision: q.activeRevisionId ? revMap.get(q.activeRevisionId) : undefined, activeCurrency: q.activeRevisionId ? currencyMap.get(q.activeRevisionId) : undefined, lastActivity: actMap.get(q.id) }));
   }
 
   async detail(id: string, revisionId?: string): Promise<LogoKalemDetail> {

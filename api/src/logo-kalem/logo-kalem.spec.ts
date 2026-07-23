@@ -262,6 +262,28 @@ describe('LogoKalemService finans ve gönderim korumaları', () => {
     expect(result.sections[0].lines[0].catalogCategory).toBe('RETAIL_BRANCH');
   });
 
+  it('dashboard listesine aktif revizyonun para birimini ve son hareketini ekler', async () => {
+    const sample = detail('tr');
+    sample.quote.activeRevisionId = sample.revision.id;
+    const activity = { quoteId: sample.quote.id, note: 'Müşteri arandı', activityAt: new Date('2026-07-23T09:00:00Z') };
+    const listService = new LogoKalemService(
+      { find: jest.fn().mockResolvedValue([sample.quote]) } as never,
+      { findBy: jest.fn().mockResolvedValue([sample.revision]) } as never,
+      { find: jest.fn().mockResolvedValue([{ revisionId: sample.revision.id, type: 'MAIN', currency: 'AZN', sortOrder: 0 }]) } as never,
+      {} as never,
+      {} as never,
+      { find: jest.fn().mockResolvedValue([activity]) } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    const [result] = await listService.list();
+    expect(result.activeRevision).toBe(sample.revision);
+    expect(result.activeCurrency).toBe('AZN');
+    expect(result.lastActivity).toBe(activity);
+  });
+
   it('SMTP başarısızlığında transaction başlatmaz ve revizyonu kilitlemez', async () => {
     jest.spyOn(service, 'detail').mockResolvedValue(detail('tr'));
     pdf.render.mockResolvedValue(Buffer.from('pdf'));
